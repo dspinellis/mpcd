@@ -18,7 +18,7 @@ TEST_FILES=$(wildcard *Test.h)
 all: mpcd
 
 
-OBJS=TokenContainer.o
+OBJS=TokenContainer.o CloneDetector.o
 
 UnitTests: UnitTests.o $(OBJS)
 	$(CXX) $(LDFLAGS) UnitTests.o $(OBJS) -lcppunit -o $@

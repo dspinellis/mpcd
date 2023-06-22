@@ -1,5 +1,4 @@
-#ifndef TOKENCONTAINERTEST_H
-#define TOKENCONTAINERTEST_H
+#pragma once
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <sstream>
@@ -13,6 +12,8 @@ class TokenContainerTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testLineNumberEmptyLastEmpty);
     CPPUNIT_TEST(testLineView);
     CPPUNIT_TEST(testReaminingTokens);
+    CPPUNIT_TEST(testLineBegin);
+    CPPUNIT_TEST(testLineOffset);
     CPPUNIT_TEST_SUITE_END();
 public:
     void testConstruct() {
@@ -71,5 +72,27 @@ public:
             CPPUNIT_ASSERT_EQUAL((FileData::line_number_type)0, file.remaining_tokens(3));
         }
     }
+
+    void testLineBegin() {
+        std::istringstream iss("Fname\n12 42\n\n7\n\n");
+        TokenContainer tc(iss);
+
+        for (auto file : tc.file_view()) {
+            CPPUNIT_ASSERT_EQUAL(FileData::token_type(12), *file.line_begin(0));
+            CPPUNIT_ASSERT_EQUAL(FileData::token_type(7), *file.line_begin(1));
+            CPPUNIT_ASSERT_EQUAL(FileData::token_type(7), *file.line_begin(2));
+        }
+    }
+
+    void testLineOffset() {
+        std::istringstream iss("Fname\n12 42\n\n7\n\n");
+        TokenContainer tc(iss);
+
+        for (auto file : tc.file_view()) {
+            CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(0), file.line_offset(0));
+            CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(2), file.line_offset(1));
+            CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(2), file.line_offset(2));
+            CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(3), file.line_offset(3));
+        }
+    }
 };
-#endif /*  TOKENCONTAINERTEST_H */

@@ -16,6 +16,8 @@
  * A container for the read token stream.
  */
 
+#pragma once
+
 #include <istream>
 #include <vector>
 #include <string>
@@ -62,6 +64,11 @@ private:
     const size_type size;
 };
 
+class FileData;
+
+typedef std::vector<FileData> FileDataCollection;
+typedef FileDataCollection::size_type file_id_type;
+
 // Data stored about each file
 class FileData {
 public:
@@ -71,17 +78,24 @@ private:
     // File name
     std::string name;
 
+    // Identifier
+    file_id_type id;
+
     // Tokens of all files
     std::vector<token_type> tokens;
-    typedef decltype(tokens)::size_type line_offset_type;
+public:
+    typedef decltype(tokens)::size_type token_offset_type;
 
+private:
     // Offsset in tokens of each line
-    std::vector<line_offset_type> line_offsets;
+    std::vector<token_offset_type> line_offsets;
 public:
     typedef decltype(line_offsets)::size_type line_number_type;
 
+    file_id_type get_id() const { return id; }
+
     // Construct given a file name
-    FileData(std::string name) : name(name) {}
+    FileData(std::string name, file_id_type id) : name(name), id(id) {}
 
     // Add a token at the end
     void add_token(token_type token) {
@@ -122,20 +136,30 @@ public:
      * a given line position.
      * Internally line numbers are 0-based
      */
-    line_offset_type remaining_tokens(line_number_type line_number) {
+    token_offset_type remaining_tokens(line_number_type line_number) {
         return tokens.size() - line_offsets[line_number];
+    }
+
+    // Return an iterator to the tokens starting in the specified line
+    decltype(tokens)::iterator line_begin(line_number_type line_number) {
+        return tokens.begin() + line_offsets[line_number];
+    }
+
+    // Return an iterator to the tokens starting in the specified line
+    token_offset_type line_offset(line_number_type line_number) {
+        return line_offsets[line_number];
     }
 };
 
 class TokenContainer {
 private:
-    std::vector<FileData> file_data;
+    FileDataCollection file_data;
 
     // Add a new file, which becomes the top-most one
     void add_file(const std::string &name) {
         if (!file_data.empty())
             file_data.back().shrink_to_fit();
-        file_data.push_back(FileData(name));
+        file_data.push_back(FileData(name, file_data.size()));
     }
 
     // Add a token to the top-most file
@@ -148,11 +172,13 @@ private:
         file_data.back().add_line();
     }
 public:
+    typedef decltype(file_data)::size_type file_id_type;
+
     // Construct from an input stream
     TokenContainer(std::istream &in);
 
     // Return an iterator over the container's files
-    ConstVectorView<decltype(file_data)::value_type> file_view() {
+    ConstVectorView<decltype(file_data)::value_type> file_view() const {
         return file_data;
     }
 };

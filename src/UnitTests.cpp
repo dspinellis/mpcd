@@ -17,6 +17,7 @@
 #include <cppunit/ui/text/TestRunner.h>
 
 #include "TokenContainerTest.h"
+#include "CloneDetectorTest.h"
 
 int
 main(int argc, char *argv[])
@@ -24,6 +25,7 @@ main(int argc, char *argv[])
     CppUnit::TextUi::TestRunner runner;
 
     runner.addTest(TokenContainerTest::suite());
+    runner.addTest(CloneDetectorTest::suite());
 
     runner.run();
     return 0;

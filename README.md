@@ -35,7 +35,7 @@ located in the `src` directory.
 find src -type f -name '*.java' -print0 |
 while IFS= read -r -d '' file; do
   echo "F$file"
-  tokenizer -l Jave -o line -t N "$file"
+  tokenizer -l Java -o line -t N "$file"
 done |
 mpcd >results.txt
 ```

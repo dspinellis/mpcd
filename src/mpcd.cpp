@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "TokenContainer.h"
+#include "CloneDetector.h"
 
 // Identify clones among the tokenized input stream
 int
@@ -47,5 +48,7 @@ main(int argc, char * const argv[])
         }
 
     TokenContainer tc(std::cin);
+    CloneDetector cd(tc, clone_tokens);
+
     exit(EXIT_SUCCESS);
 }
