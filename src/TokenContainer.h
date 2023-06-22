@@ -23,46 +23,7 @@
 #include <string>
 #include <iostream>
 
-// A constant view of a vector
-template <typename T>
-class ConstVectorView {
-    const std::vector<T>& vec;
-public:
-    ConstVectorView(const std::vector<T>& vec) : vec(vec) {}
-
-    typename std::vector<T>::const_iterator begin() const {
-        return vec.begin();
-    }
-    typename std::vector<T>::const_iterator end() const {
-        return vec.end();
-    }
-};
-
-// An iterator over a vector's indices
-template<typename T>
-class IndexRange {
-public:
-    using size_type = typename T::size_type;
-
-    class iterator {
-        size_type index;
-    public:
-        iterator(size_type index) : index(index) {}
-        size_type operator*() const { return index; }
-        const iterator& operator++() { ++index; return *this; }
-        bool operator!=(const iterator& other) const {
-		return index != other.index;
-	}
-    };
-
-    iterator begin() const { return iterator(0); }
-    iterator end() const { return iterator(size); }
-
-    IndexRange(size_type size) : size(size) {}
-
-private:
-    const size_type size;
-};
+#include "CollectionViews.h"
 
 class FileData;
 
