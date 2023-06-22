@@ -68,6 +68,9 @@ public:
 private:
     std::map<seen_tokens_type, seen_locations_type> seen;
 
+    // Minimum length of clones to be detected
+    unsigned clone_length;
+
     // Add a new token sequence that has been encountered
     void insert(const seen_tokens_type &tokens, const CloneLocation location) {
         auto it = seen.find(tokens);
@@ -77,7 +80,9 @@ private:
             it->second.insert(location);
     }
 public:
-    CloneDetector(const TokenContainer &tc, unsigned clone_size);
+    CloneDetector(const TokenContainer &tc, unsigned clone_length);
+    void prune_non_clones();
+    void report() const;
 
     // Return the number of sites for potential clones (for testing)
     int get_number_of_sites() { return seen.size(); }

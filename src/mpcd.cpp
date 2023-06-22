@@ -12,6 +12,9 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
+ *
+ * Modular performant clone detector
+ *
  */
 
 #include <cstring>
@@ -49,6 +52,7 @@ main(int argc, char * const argv[])
 
     TokenContainer tc(std::cin);
     CloneDetector cd(tc, clone_tokens);
+    cd.prune_non_clones();
 
     exit(EXIT_SUCCESS);
 }

@@ -19,7 +19,8 @@
 #include "CloneDetector.h"
 
 // Construct from a container of all tokens encountered
-CloneDetector::CloneDetector(const TokenContainer &tc, unsigned clone_size)
+CloneDetector::CloneDetector(const TokenContainer &tc, unsigned clone_length)
+    : clone_length(clone_length)
 {
     for (auto file : tc.file_view())
         for (auto line : file.line_view()) {
@@ -29,13 +30,23 @@ CloneDetector::CloneDetector(const TokenContainer &tc, unsigned clone_size)
                 continue;
 
             // Skip end sequences of insufficient length
-            if (file.remaining_tokens(line) < clone_size)
+            if (file.remaining_tokens(line) < clone_length)
                 continue;
 
             // Create vector of token sequence to add
             auto begin = file.line_begin(line);
-            seen_tokens_type seen(begin, begin + clone_size);
+            seen_tokens_type seen(begin, begin + clone_length);
 
             insert(seen, CloneLocation(file.get_id(), file.line_offset(line)));
         }
+}
+
+// Prune-away recorded tokens not associated with clones
+void
+CloneDetector::prune_non_clones() {
+    for (auto it = seen.begin(); it != seen.end();)
+        if (it->second.size() == 1)
+            it = seen.erase(it);
+        else
+            ++it;
 }
