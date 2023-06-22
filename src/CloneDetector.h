@@ -54,6 +54,14 @@ public:
         os << l.file_id << '.' << l.token_offset;
         return os;
     }
+
+    TokenContainer::file_id_type get_file_id() const {
+        return TokenContainer::file_id_type(file_id);
+    }
+
+    FileData::token_offset_type get_token_offset() const {
+        return FileData::token_offset_type(token_offset);
+    }
 };
 
 inline bool operator<(const CloneLocation& lhs, const CloneLocation& rhs) {
@@ -66,7 +74,11 @@ public:
     typedef std::set<CloneLocation> seen_locations_type;
 
 private:
+    // Tokens that have been encountered in the examined code
     std::map<seen_tokens_type, seen_locations_type> seen;
+
+    // Container of all tokens
+    const TokenContainer &token_container;
 
     // Minimum length of clones to be detected
     unsigned clone_length;

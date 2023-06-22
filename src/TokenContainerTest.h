@@ -7,16 +7,18 @@
 
 class TokenContainerTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(TokenContainerTest);
-    CPPUNIT_TEST(testConstruct);
-    CPPUNIT_TEST(testLineNumberEmptyLastFull);
-    CPPUNIT_TEST(testLineNumberEmptyLastEmpty);
-    CPPUNIT_TEST(testLineView);
-    CPPUNIT_TEST(testReaminingTokens);
-    CPPUNIT_TEST(testLineBegin);
-    CPPUNIT_TEST(testLineOffset);
+    CPPUNIT_TEST(test_construct);
+    CPPUNIT_TEST(test_line_number_empty_last_full);
+    CPPUNIT_TEST(test_line_number_empty_last_empty);
+    CPPUNIT_TEST(test_line_view);
+    CPPUNIT_TEST(test_remaining_tokens);
+    CPPUNIT_TEST(test_line_begin);
+    CPPUNIT_TEST(test_line_offset);
+    CPPUNIT_TEST(test_get_file_name);
+    CPPUNIT_TEST(test_get_token_line_number);
     CPPUNIT_TEST_SUITE_END();
 public:
-    void testConstruct() {
+    void test_construct() {
         std::istringstream iss("Fname\n12 42\n\n7\n");
         TokenContainer tc(iss);
 
@@ -25,7 +27,7 @@ public:
         }
     }
 
-    void testLineNumberEmptyLastFull() {
+    void test_line_number_empty_last_full() {
         std::istringstream iss("Fname\n12 42\n\n7\n");
         TokenContainer tc(iss);
 
@@ -36,7 +38,7 @@ public:
         }
     }
 
-    void testLineNumberEmptyLastEmpty() {
+    void test_line_number_empty_last_empty() {
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
@@ -48,7 +50,7 @@ public:
         }
     }
 
-    void testLineView() {
+    void test_line_view() {
         std::istringstream iss("Fname\n12 42\n\n7\n");
         TokenContainer tc(iss);
 
@@ -61,7 +63,7 @@ public:
         }
     }
 
-    void testReaminingTokens() {
+    void test_remaining_tokens() {
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
@@ -73,7 +75,7 @@ public:
         }
     }
 
-    void testLineBegin() {
+    void test_line_begin() {
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
@@ -84,7 +86,7 @@ public:
         }
     }
 
-    void testLineOffset() {
+    void test_line_offset() {
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
@@ -94,5 +96,24 @@ public:
             CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(2), file.line_offset(2));
             CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(3), file.line_offset(3));
         }
+    }
+
+    void test_get_file_name() {
+        std::istringstream iss("Fname\n12 42\n\n7\n");
+        TokenContainer tc(iss);
+
+        CPPUNIT_ASSERT_EQUAL(std::string("name"), tc.get_file_name(0));
+    }
+
+    void test_get_token_line_number() {
+        std::istringstream iss("Fname\n12 42\n\n7\n\n");
+        TokenContainer tc(iss);
+
+        for (auto file : tc.file_view()) {
+            CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(0), file.get_token_line_number(0));
+            CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(0), file.get_token_line_number(1));
+            CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(2), file.get_token_line_number(2));
+        }
+        CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(2), tc.get_token_line_number(0, 2));
     }
 };

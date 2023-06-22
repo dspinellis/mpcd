@@ -20,7 +20,7 @@
 
 // Construct from a container of all tokens encountered
 CloneDetector::CloneDetector(const TokenContainer &tc, unsigned clone_length)
-    : clone_length(clone_length)
+    : token_container(tc), clone_length(clone_length)
 {
     for (auto file : tc.file_view())
         for (auto line : file.line_view()) {
@@ -49,4 +49,17 @@ CloneDetector::prune_non_clones() {
             it = seen.erase(it);
         else
             ++it;
+}
+
+// Report found clones
+void
+CloneDetector::report() const {
+    for (auto it : seen) {
+        auto& clones = it.second;
+        for (auto location : clones) {
+            std::cout << token_container.get_token_line_number(location.get_file_id(), location.get_token_offset()) + 1 << '\t';
+            std::cout << token_container.get_file_name(location.get_file_id()) << std::endl;
+        }
+        std::cout << std::endl;
+    }
 }

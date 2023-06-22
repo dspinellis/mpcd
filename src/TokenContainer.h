@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <istream>
 #include <vector>
 #include <string>
@@ -74,7 +75,7 @@ public:
         line_offsets.shrink_to_fit();
     }
 
-    std::string get_name() const { return name; }
+    const std::string &get_name() const { return name; }
 
     // Return an iterator over the container's lines (line numbers)
     IndexRange<decltype(line_offsets)> line_view() {
@@ -110,6 +111,13 @@ public:
     token_offset_type line_offset(line_number_type line_number) {
         return line_offsets[line_number];
     }
+
+    // Return the (0-based) line number to which a token belongs
+    line_number_type get_token_line_number(token_offset_type o) const {
+        // First line with an offset greater than o
+        auto upper = std::upper_bound(line_offsets.begin(), line_offsets.end(), o);
+        return std::distance(line_offsets.begin(), upper) - 1;
+    }
 };
 
 class TokenContainer {
@@ -141,5 +149,15 @@ public:
     // Return an iterator over the container's files
     ConstVectorView<decltype(file_data)::value_type> file_view() const {
         return file_data;
+    }
+
+    // Return a file's name
+    const std::string& get_file_name(file_id_type id) const {
+        return file_data[id].get_name();
+    }
+
+    // Return a token's line
+    FileData::line_number_type get_token_line_number(file_id_type id, FileData::token_offset_type o) const {
+        return file_data[id].get_token_line_number(o);
     }
 };

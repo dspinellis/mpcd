@@ -8,4 +8,4 @@ while IFS= read -r -d '' file; do
   echo "F$file"
   tokenizer -l C++ -o line -t N "$file"
 done |
-mpcd
+mpcd -n 25

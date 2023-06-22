@@ -53,6 +53,7 @@ main(int argc, char * const argv[])
     TokenContainer tc(std::cin);
     CloneDetector cd(tc, clone_tokens);
     cd.prune_non_clones();
+    cd.report();
 
     exit(EXIT_SUCCESS);
 }
