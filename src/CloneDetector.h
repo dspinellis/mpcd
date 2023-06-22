@@ -71,7 +71,7 @@ inline bool operator<(const CloneLocation& lhs, const CloneLocation& rhs) {
 class CloneDetector {
 public:
     typedef const std::vector<FileData::token_type> seen_tokens_type;
-    typedef std::set<CloneLocation> seen_locations_type;
+    typedef std::vector<CloneLocation> seen_locations_type;
 
 private:
     // Tokens that have been encountered in the examined code
@@ -89,7 +89,7 @@ private:
         if (it == seen.end())
             seen.insert(it, std::make_pair(tokens, seen_locations_type{location}));
         else
-            it->second.insert(location);
+            it->second.push_back(location);
     }
 public:
     CloneDetector(const TokenContainer &tc, unsigned clone_length);
