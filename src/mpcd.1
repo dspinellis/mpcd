@@ -1,0 +1,46 @@
+.TH MPCD 1 2023-05-22
+.SH NAME
+\fBmpcd\fR \(en report code lones
+.SH SYNOPSIS
+\fBmpcd\fR [\fB\-n \fIclone-length\fR]
+.SH DESCRIPTION
+The \fBmpcd\fR utility reads from its standard input a stream
+of file identifiers (e.g. file paths) prefixed with F,
+followed by each file's tokens for each line in the range 0–699.
+It reports on its standard output identified code clones.
+
+.SH OPTIONS
+The behavior of the \fBmpcd\fR utility can be controlled
+through the following command-line option.
+.RS 3
+
+.TP
+.BI "-n " clone-length
+Specify the minimum length of clones that will be detected.
+The default value is 15.
+
+.RE
+
+.SH EXAMPLE
+.PP
+Identify clones for all Java files located in the src directory.
+.ft C
+.nf
+find src -type f -name '*.java' -print0 |
+while IFS= read -r -d '' file; do
+  echo "F$file"
+  tokenizer -l Java -o line -t N "$file"
+done |
+mpcd
+.ft P
+.fi
+
+.SH DIAGNOSTICS
+
+.SH AUTHORS
+Written by Diomidis Spinellis.
+
+.SH BUGS
+For performance reasons no checks are made on the validity of the input
+stream.
+Invalid input may result in a crash.
