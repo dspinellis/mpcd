@@ -16,6 +16,7 @@ class TokenContainerTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_line_offset);
     CPPUNIT_TEST(test_get_file_name);
     CPPUNIT_TEST(test_get_token_line_number);
+    CPPUNIT_TEST(test_get_offset_begin);
     CPPUNIT_TEST_SUITE_END();
 public:
     void test_construct() {
@@ -115,5 +116,15 @@ public:
             CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(2), file.get_token_line_number(2));
         }
         CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(2), tc.get_token_line_number(0, 2));
+    }
+
+    void test_get_offset_begin() {
+        std::istringstream iss("Fname\n12 42\n\n7\n\n");
+        TokenContainer tc(iss);
+
+        for (auto file : tc.file_view()) {
+            CPPUNIT_ASSERT_EQUAL((short)42, *file.offset_begin(1));
+        }
+        CPPUNIT_ASSERT_EQUAL((short)7, *tc.offset_begin(0, 2));
     }
 };

@@ -16,12 +16,17 @@
  * A data structure and algorithms for detecting clones
  */
 
+#include <algorithm>
+
 #include "CloneDetector.h"
 
 // Construct from a container of all tokens encountered
 CloneDetector::CloneDetector(const TokenContainer &tc, unsigned clone_length)
     : token_container(tc), clone_length(clone_length)
 {
+    SeenTokens::set_token_container(&tc);
+    SeenTokens::set_clone_length(clone_length);
+
     for (auto file : tc.file_view())
         for (auto line : file.line_view()) {
 
@@ -33,9 +38,8 @@ CloneDetector::CloneDetector(const TokenContainer &tc, unsigned clone_length)
             if (file.remaining_tokens(line) < clone_length)
                 continue;
 
-            // Create vector of token sequence to add
-            auto begin = file.line_begin(line);
-            seen_tokens_type seen(begin, begin + clone_length);
+            // Create an identifier for the token sequence to add
+            SeenTokens seen(file.get_id(), file.line_offset(line));
 
             insert(seen, CloneLocation(file.get_id(), file.line_offset(line)));
         }
@@ -62,4 +66,22 @@ CloneDetector::report() const {
         }
         std::cout << std::endl;
     }
+}
+
+// Container holding the encountered tokens
+const TokenContainer* SeenTokens::token_container;
+
+// Length of identified token sequences
+unsigned SeenTokens::clone_length;
+
+// Return true if the tokens identified on the lhs < than the rhs ones
+bool
+operator<(const SeenTokens& lhs, const SeenTokens& rhs) {
+    const TokenContainer* tc = SeenTokens::get_token_container();
+    unsigned clone_length  = SeenTokens::get_clone_length();
+
+    auto lhs_it = tc->offset_begin(lhs.get_file_id(), lhs.get_token_offset());
+    auto rhs_it = tc->offset_begin(rhs.get_file_id(), rhs.get_token_offset());
+    return std::lexicographical_compare(lhs_it, lhs_it + clone_length,
+            rhs_it, rhs_it + clone_length);
 }

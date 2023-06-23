@@ -35,6 +35,7 @@ typedef FileDataCollection::size_type file_id_type;
 class FileData {
 public:
     typedef short token_type;
+    typedef std::vector<token_type> tokens_type;
 
 private:
     // File name
@@ -44,9 +45,9 @@ private:
     file_id_type id;
 
     // Tokens of all files
-    std::vector<token_type> tokens;
+    tokens_type tokens;
 public:
-    typedef decltype(tokens)::size_type token_offset_type;
+    typedef tokens_type::size_type token_offset_type;
 
 private:
     // Offsset in tokens of each line
@@ -86,7 +87,7 @@ public:
      * Return true if the specified line is empty
      * Internally line numbers are 0-based
      */
-    bool line_is_empty(line_number_type line_number) {
+    bool line_is_empty(line_number_type line_number) const {
         if (line_number == line_offsets.size() - 1)
             return line_offsets[line_number] == tokens.size();
         else
@@ -98,17 +99,22 @@ public:
      * a given line position.
      * Internally line numbers are 0-based
      */
-    token_offset_type remaining_tokens(line_number_type line_number) {
+    token_offset_type remaining_tokens(line_number_type line_number) const {
         return tokens.size() - line_offsets[line_number];
     }
 
     // Return an iterator to the tokens starting in the specified line
-    decltype(tokens)::iterator line_begin(line_number_type line_number) {
+    tokens_type::const_iterator line_begin(line_number_type line_number) const {
         return tokens.begin() + line_offsets[line_number];
     }
 
-    // Return an iterator to the tokens starting in the specified line
-    token_offset_type line_offset(line_number_type line_number) {
+    // Return an iterator to the tokens starting at the specified offset
+    tokens_type::const_iterator offset_begin(token_offset_type o) const {
+        return tokens.begin() + o;
+    }
+
+    // Return the offset of the tokens starting in the specified line
+    token_offset_type line_offset(line_number_type line_number) const {
         return line_offsets[line_number];
     }
 
@@ -159,5 +165,11 @@ public:
     // Return a token's line
     FileData::line_number_type get_token_line_number(file_id_type id, FileData::token_offset_type o) const {
         return file_data[id].get_token_line_number(o);
+    }
+
+    // Return an iterator to the tokens starting in the specified offset
+    FileData::tokens_type::const_iterator offset_begin(file_id_type file_id,
+             FileData::token_offset_type offset) const {
+        return file_data[file_id].offset_begin(offset);
     }
 };
