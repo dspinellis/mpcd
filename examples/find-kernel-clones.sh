@@ -15,6 +15,6 @@ grep '\.[ch]$' |
 while read file; do
   echo "F$file"
   git --git-dir "$1" show "$2:$file" |
-  tokenizer -l C++ -o line -t N
+  tokenizer -l C -o line -t N
 done |
 mpcd -n 40
