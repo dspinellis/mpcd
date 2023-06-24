@@ -4,13 +4,14 @@ MANPREFIX ?= "$(PREFIX)/share/man/man1"
 
 # All warnings, treat warnings as errors, generate dependencies in .d files
 # offer C++11 features
-CXXFLAGS=-Wall -Werror -MD -std=c++11
+CXXFLAGS=-Wall -Werror -MD -std=c++11 $(ADDCXXFLAGS)
 
 ifdef DEBUG
-LDFLAGS=-g
+LDFLAGS=-g $(ADDLDFLAGS)
 CXXFLAGS+=-g -O0 -D_GLIBCXX_ASSERTIONS
 else
 CXXFLAGS+=-O2
+LDFLAGS=$(ADDLDFLAGS)
 endif
 
 TEST_FILES=$(wildcard *Test.h)
