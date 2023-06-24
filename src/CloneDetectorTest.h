@@ -92,9 +92,9 @@ public:
         CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
         CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
 
-        for (auto clone_group: cd.clone_view()) {
+        for (const auto& clone_group: cd.clone_view()) {
             CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
-            for (auto clone: clone_group) {
+            for (const auto& clone: clone_group) {
                 CPPUNIT_ASSERT_EQUAL(size_t(3), clone.size());
             }
         }
@@ -110,16 +110,16 @@ public:
         CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
         CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
 
-        for (auto clone_group: cd.clone_view()) {
+        for (const auto& clone_group: cd.clone_view()) {
             CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
-            for (auto clone: clone_group)
+            for (const auto& clone: clone_group)
                 CPPUNIT_ASSERT_EQUAL(size_t(3), clone.size());
         }
 
         cd.extend_clones();
-        for (auto clone_group: cd.clone_view()) {
+        for (const auto& clone_group: cd.clone_view()) {
             CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
-            for (auto clone: clone_group)
+            for (const auto& clone: clone_group)
                 CPPUNIT_ASSERT_EQUAL(size_t(4), clone.size());
         }
     }
@@ -134,16 +134,16 @@ public:
         CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
         CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
 
-        for (auto clone_group: cd.clone_view()) {
+        for (const auto& clone_group: cd.clone_view()) {
             CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
-            for (auto clone: clone_group)
+            for (const auto& clone: clone_group)
                 CPPUNIT_ASSERT_EQUAL(size_t(3), clone.size());
         }
 
         cd.extend_clones();
-        for (auto clone_group: cd.clone_view()) {
+        for (const auto& clone_group: cd.clone_view()) {
             CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
-            for (auto clone: clone_group)
+            for (const auto& clone: clone_group)
                 CPPUNIT_ASSERT_EQUAL(size_t(3), clone.size());
         }
     }
@@ -159,16 +159,16 @@ public:
         CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clone_groups());
         CPPUNIT_ASSERT_EQUAL(4, cd.get_number_of_clones());
 
-        for (auto clone_group: cd.clone_view()) {
+        for (const auto& clone_group: cd.clone_view()) {
             CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
-            for (auto clone: clone_group)
+            for (const auto& clone: clone_group)
                 CPPUNIT_ASSERT(clone.size() == 3 || clone.size() == 4);
         }
 
         cd.extend_clones();
-        for (auto clone_group: cd.clone_view()) {
+        for (const auto& clone_group: cd.clone_view()) {
             CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
-            for (auto clone: clone_group)
+            for (const auto& clone: clone_group)
                 CPPUNIT_ASSERT(clone.size() == 4 || clone.size() == 7);
         }
     }

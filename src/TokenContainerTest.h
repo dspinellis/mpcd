@@ -26,7 +26,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT_EQUAL(std::string("name"), file.get_name());
         }
     }
@@ -35,7 +35,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT(!file.line_is_empty(0));
             CPPUNIT_ASSERT(file.line_is_empty(1));
             CPPUNIT_ASSERT(!file.line_is_empty(2));
@@ -46,7 +46,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT(!file.line_is_empty(0));
             CPPUNIT_ASSERT(file.line_is_empty(1));
             CPPUNIT_ASSERT(!file.line_is_empty(2));
@@ -58,9 +58,9 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             FileData::line_number_type n = 0;
-            for (auto line : file.line_view()) {
+            for (const auto& line : file.line_view()) {
                 CPPUNIT_ASSERT_EQUAL(n, line);
                 n++;
             }
@@ -71,7 +71,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT_EQUAL((FileData::line_number_type)3, file.remaining_tokens(0));
             CPPUNIT_ASSERT_EQUAL((FileData::line_number_type)1, file.remaining_tokens(1));
             CPPUNIT_ASSERT_EQUAL((FileData::line_number_type)1, file.remaining_tokens(2));
@@ -83,7 +83,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT_EQUAL(FileData::token_type(12), *file.line_begin(0));
             CPPUNIT_ASSERT_EQUAL(FileData::token_type(7), *file.line_begin(1));
             CPPUNIT_ASSERT_EQUAL(FileData::token_type(7), *file.line_begin(2));
@@ -94,7 +94,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(0), file.line_offset(0));
             CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(2), file.line_offset(1));
             CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(2), file.line_offset(2));
@@ -115,7 +115,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(0), file.get_token_line_number(0));
             CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(0), file.get_token_line_number(1));
             CPPUNIT_ASSERT_EQUAL(FileData::line_number_type(2), file.get_token_line_number(2));
@@ -132,7 +132,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT_EQUAL((short)42, *file.offset_begin(1));
         }
         CPPUNIT_ASSERT_EQUAL((short)7, *tc.offset_begin(0, 2));
@@ -160,7 +160,7 @@ public:
         std::istringstream iss("Fname\n12 42\n\n7\n\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT_EQUAL((short)42, file.get_token(1));
         }
         CPPUNIT_ASSERT_EQUAL((short)7, tc.get_token(0, 2));
@@ -171,7 +171,7 @@ public:
         std::istringstream iss("Fname\n12 42\n9\n7 44\n\n33 55\n");
         TokenContainer tc(iss);
 
-        for (auto file : tc.file_view()) {
+        for (const auto& file : tc.file_view()) {
             CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(3), file.get_preceding_eol_offset(4));
         }
         CPPUNIT_ASSERT_EQUAL(FileData::token_offset_type(0), tc.get_preceding_eol_offset(0, 0));

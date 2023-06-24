@@ -27,8 +27,8 @@ CloneDetector::CloneDetector(const TokenContainer &tc, unsigned clone_length)
     SeenTokens::set_token_container(&tc);
     SeenTokens::set_clone_length(clone_length);
 
-    for (auto file : tc.file_view())
-        for (auto line : file.line_view()) {
+    for (const auto& file : tc.file_view())
+        for (const auto& line : file.line_view()) {
 
             // Skip empty lines; nothing to add
             if (file.line_is_empty(line))
@@ -58,8 +58,8 @@ CloneDetector::prune_non_clones() {
 // Report found clones
 void
 CloneDetector::report() const {
-    for (auto clone_group : clones) {
-        for (auto member : clone_group) {
+    for (const auto& clone_group : clones) {
+        for (const auto& member : clone_group) {
             std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_begin_token_offset()) + 1 << '\t';
             std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_end_token_offset()) + 1 << '\t';
             std::cout << token_container.get_file_name(member.get_file_id()) << std::endl;
@@ -90,7 +90,7 @@ operator<(const SeenTokens& lhs, const SeenTokens& rhs) {
 void
 CloneDetector::create_line_region_clones()
 {
-    for (auto it : seen) {
+    for (const auto& it : seen) {
         auto leader = it.first;
 
         // Extent of clone leader data to line end
@@ -100,7 +100,7 @@ CloneDetector::create_line_region_clones()
         // Create a group of clones that are the same till the end of the line
         std::list<Clone> group;
         int group_size = 0;
-        for (auto member : it.second) {
+        for (const auto& member : it.second) {
             auto member_extension_begin = token_container.offset_begin(member.get_file_id(), member.get_begin_token_offset() + clone_length);
             auto offset_in_last_line = member.get_begin_token_offset() + clone_length - 1;
             auto member_line_end = token_container.line_from_offset_end(member.get_file_id(), offset_in_last_line);

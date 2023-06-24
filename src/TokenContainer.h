@@ -80,7 +80,7 @@ public:
     const std::string &get_name() const { return name; }
 
     // Return an iterator over the container's lines (line numbers)
-    IndexRange<decltype(line_offsets)> line_view() {
+    IndexRange<decltype(line_offsets)> line_view() const {
         return IndexRange<decltype(line_offsets)>(line_offsets.size());
     }
 

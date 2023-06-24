@@ -204,7 +204,7 @@ public:
     // Return the number of potential clones found (for testing)
     int get_number_of_seen_clones() {
         int nclones = 0;
-        for (auto it : seen) {
+        for (const auto& it : seen) {
             size_t nelem = it.second.size();
             // std::cout << "CHECK: " << it.first << "\n";
             if (nelem > 1)
@@ -218,7 +218,7 @@ public:
 
     int get_number_of_clones() {
         int nclones = 0;
-        for (auto it : clones)
+        for (const auto& it : clones)
             nclones += it.size();
         return nclones;
     }
