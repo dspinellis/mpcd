@@ -58,11 +58,11 @@ CloneDetector::prune_non_clones() {
 // Report found clones
 void
 CloneDetector::report() const {
-    for (auto it : seen) {
-        auto& clones = it.second;
-        for (auto location : clones) {
-            std::cout << token_container.get_token_line_number(location.get_file_id(), location.get_token_offset()) + 1 << '\t';
-            std::cout << token_container.get_file_name(location.get_file_id()) << std::endl;
+    for (auto clone_group : clones) {
+        for (auto member : clone_group) {
+            std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_begin_token_offset()) + 1 << '\t';
+            std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_end_token_offset()) + 1 << '\t';
+            std::cout << token_container.get_file_name(member.get_file_id()) << std::endl;
         }
         std::cout << std::endl;
     }
@@ -80,8 +80,42 @@ operator<(const SeenTokens& lhs, const SeenTokens& rhs) {
     const TokenContainer* tc = SeenTokens::get_token_container();
     unsigned clone_length  = SeenTokens::get_clone_length();
 
-    auto lhs_it = tc->offset_begin(lhs.get_file_id(), lhs.get_token_offset());
-    auto rhs_it = tc->offset_begin(rhs.get_file_id(), rhs.get_token_offset());
+    auto lhs_it = tc->offset_begin(lhs.get_file_id(), lhs.get_begin_token_offset());
+    auto rhs_it = tc->offset_begin(rhs.get_file_id(), rhs.get_begin_token_offset());
     return std::lexicographical_compare(lhs_it, lhs_it + clone_length,
             rhs_it, rhs_it + clone_length);
+}
+
+// Create partial candidate clones in "seen" into full clones in "clone"
+void
+CloneDetector::create_line_region_clones()
+{
+    for (auto it : seen) {
+        auto leader = it.first;
+
+        // Extent of clone leader data to line end
+        auto leader_extension_begin = token_container.offset_begin(leader.get_file_id(), leader.get_begin_token_offset() + clone_length);
+        auto leader_line_end = token_container.line_from_offset_end(leader.get_file_id(), leader.get_begin_token_offset() + clone_length - 1);
+        auto leader_extension_length = leader_line_end - leader_extension_begin;
+        // Create a group of clones that are the same till the end of the line
+        std::list<Clone> group;
+        int group_size = 0;
+        for (auto member : it.second) {
+            auto member_extension_begin = token_container.offset_begin(member.get_file_id(), member.get_begin_token_offset() + clone_length);
+            auto member_end_line_offset = member.get_begin_token_offset() + clone_length - 1;
+            auto member_line_end = token_container.line_from_offset_end(member.get_file_id(), member_end_line_offset);
+
+            // Unequal line length extensions
+            if (member_line_end - member_extension_begin != leader_extension_length)
+                continue;
+            // Unequal extension contents
+            if (!std::equal(leader_extension_begin, leader_line_end, member_extension_begin))
+                continue;
+            group.emplace_back(Clone(member.get_file_id(),
+                        member.get_begin_token_offset(), member_end_line_offset));
+            group_size++;
+        }
+        if (group_size > 1)
+            clones.push_back(std::move(group));
+    }
 }

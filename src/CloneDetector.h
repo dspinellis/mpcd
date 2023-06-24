@@ -18,8 +18,8 @@
 
 #pragma once
 
+#include <list>
 #include <map>
-#include <set>
 #include <vector>
 #include <ostream>
 
@@ -33,26 +33,28 @@ class CloneLocation {
 public:
     typedef unsigned int file_id_type;
     typedef unsigned int token_offset_type;
-private:
+
+protected:
     /*
      * Conserve 8 bytes by substituting the actual types
      * TokenContainer::file_id_type file_id;
-     * FileData::token_offset_type token_offset;
+     * FileData::token_offset_type begin_offset;
      * with smaller ones.
      */
     file_id_type file_id;
-    token_offset_type token_offset;
+    token_offset_type begin_offset;
+
 public:
     // Construct from a file id and token offset
     CloneLocation(TokenContainer::file_id_type file_id,
-            FileData::token_offset_type token_offset) :
+            FileData::token_offset_type begin_offset) :
         file_id((file_id_type)file_id),
-        token_offset((token_offset_type)token_offset) {}
+        begin_offset((token_offset_type)begin_offset) {}
 
     friend bool operator<(const CloneLocation& lhs, const CloneLocation& rhs);
 
     friend std::ostream& operator<<(std::ostream& os, const CloneLocation &l) {
-        os << l.file_id << '.' << l.token_offset;
+        os << l.file_id << '.' << l.begin_offset;
         return os;
     }
 
@@ -60,13 +62,37 @@ public:
         return TokenContainer::file_id_type(file_id);
     }
 
-    FileData::token_offset_type get_token_offset() const {
-        return FileData::token_offset_type(token_offset);
+    FileData::token_offset_type get_begin_token_offset() const {
+        return FileData::token_offset_type(begin_offset);
+    }
+};
+
+// The location and extent of a clone
+class Clone: public CloneLocation {
+private:
+    token_offset_type end_offset;
+
+public:
+    Clone(TokenContainer::file_id_type file_id,
+            FileData::token_offset_type begin_offset,
+            FileData::token_offset_type end_offset) :
+        CloneLocation(file_id, begin_offset),
+        end_offset(token_offset_type(end_offset)) {}
+
+    size_t size() const { return end_offset - begin_offset; }
+
+    friend std::ostream& operator<<(std::ostream& os, const Clone &l) {
+        os << l.file_id << '.' << l.begin_offset << '-' << l.end_offset;
+        return os;
+    }
+
+    FileData::token_offset_type get_end_token_offset() const {
+        return FileData::token_offset_type(end_offset);
     }
 };
 
 inline bool operator<(const CloneLocation& lhs, const CloneLocation& rhs) {
-    return lhs.file_id < rhs.file_id || lhs.token_offset < rhs.token_offset;
+    return lhs.file_id < rhs.file_id || lhs.begin_offset < rhs.begin_offset;
 }
 
 /*
@@ -108,14 +134,17 @@ public:
     typedef std::vector<CloneLocation> seen_locations_type;
 
 private:
-    // Tokens that have been encountered in the examined code
-    std::map<SeenTokens, seen_locations_type> seen;
-
     // Container of all tokens
     const TokenContainer &token_container;
 
+    // Tokens that have been encountered in the examined code (token_container)
+    std::map<SeenTokens, seen_locations_type> seen;
+
     // Minimum length of clones to be detected
     unsigned clone_length;
+
+    // List of found clones
+    std::list<std::list<Clone>> clones;
 
     // Add a new token sequence that has been encountered
     void insert(const SeenTokens &tokens, const CloneLocation location) {
@@ -125,16 +154,24 @@ private:
         else
             it->second.push_back(location);
     }
+
 public:
     CloneDetector(const TokenContainer &tc, unsigned clone_length);
+
+    // Prune-away recorded tokens not associated with clones
     void prune_non_clones();
+
+    // Convert candidate clones from "seen" into "clone"
+    void create_line_region_clones();
+
+    // Report found clones
     void report() const;
 
     // Return the number of sites for potential clones (for testing)
-    int get_number_of_sites() { return seen.size(); }
+    int get_number_of_seen_sites() { return seen.size(); }
 
-    // Return the number of found clones (for testing)
-    int get_number_of_clones() {
+    // Return the number of potential clones found (for testing)
+    int get_number_of_seen_clones() {
         int nclones = 0;
         for (auto it : seen) {
             size_t nelem = it.second.size();
@@ -142,6 +179,16 @@ public:
             if (nelem > 1)
                 nclones += nelem;
         }
+        return nclones;
+    }
+
+    // Return the number of actual clone groups (for testing)
+    int get_number_of_clone_groups() { return clones.size(); }
+
+    int get_number_of_clones() {
+        int nclones = 0;
+        for (auto it : clones)
+            nclones += it.size();
         return nclones;
     }
 };

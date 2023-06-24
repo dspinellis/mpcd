@@ -17,6 +17,7 @@ class TokenContainerTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_get_file_name);
     CPPUNIT_TEST(test_get_token_line_number);
     CPPUNIT_TEST(test_get_offset_begin);
+    CPPUNIT_TEST(test_line_end);
     CPPUNIT_TEST_SUITE_END();
 public:
     void test_construct() {
@@ -126,5 +127,23 @@ public:
             CPPUNIT_ASSERT_EQUAL((short)42, *file.offset_begin(1));
         }
         CPPUNIT_ASSERT_EQUAL((short)7, *tc.offset_begin(0, 2));
+    }
+
+    void test_line_end() {
+        //                             0 1 2  3    4    5
+        std::istringstream iss("Fname\n1 2 3\n4\n\n7\n\n");
+        TokenContainer tc(iss);
+
+        // Note that newlines are not stored or counted
+        CPPUNIT_ASSERT_EQUAL(long(3), tc.line_from_offset_end(0, 0) - tc.offset_begin(0, 0));
+        CPPUNIT_ASSERT_EQUAL(long(3), tc.line_from_offset_end(0, 1) - tc.offset_begin(0, 0));
+        CPPUNIT_ASSERT_EQUAL(long(3), tc.line_from_offset_end(0, 2) - tc.offset_begin(0, 0));
+        CPPUNIT_ASSERT_EQUAL(long(4), tc.line_from_offset_end(0, 3) - tc.offset_begin(0, 0));
+        CPPUNIT_ASSERT_EQUAL(long(5), tc.line_from_offset_end(0, 4) - tc.offset_begin(0, 0));
+
+        std::istringstream iss2("Fname\n1 2 3");
+        TokenContainer tc2(iss2);
+        CPPUNIT_ASSERT_EQUAL(long(3), tc2.line_from_offset_end(0, 0) - tc2.offset_begin(0, 0));
+        CPPUNIT_ASSERT_EQUAL(long(3), tc2.line_from_offset_end(0, 2) - tc2.offset_begin(0, 0));
     }
 };

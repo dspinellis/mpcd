@@ -11,6 +11,7 @@ class CloneDetectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_seen_container);
     CPPUNIT_TEST(test_insert);
     CPPUNIT_TEST(test_prune_non_clones);
+    CPPUNIT_TEST(test_create_line_region_clones);
     CPPUNIT_TEST_SUITE_END();
 public:
     void test_size() {
@@ -51,8 +52,8 @@ public:
         std::istringstream iss("Fname\n12 42 4\n\n7\n12 42 9\n7\n5 10\n5 10\n5 10\n");
         TokenContainer tc(iss);
         CloneDetector cd(tc, 2);
-        CPPUNIT_ASSERT_EQUAL(4, cd.get_number_of_sites());
-        CPPUNIT_ASSERT_EQUAL(5, cd.get_number_of_clones());
+        CPPUNIT_ASSERT_EQUAL(4, cd.get_number_of_seen_sites());
+        CPPUNIT_ASSERT_EQUAL(5, cd.get_number_of_seen_clones());
     }
 
     void test_prune_non_clones() {
@@ -60,6 +61,19 @@ public:
         TokenContainer tc(iss);
         CloneDetector cd(tc, 2);
         cd.prune_non_clones();
-        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_sites());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_seen_sites());
+        CPPUNIT_ASSERT_EQUAL(5, cd.get_number_of_seen_clones());
+    }
+
+    void test_create_line_region_clones() {
+        std::istringstream iss(
+        //              0  1  2    3  4  5  6  7  8  9   10 11 12  13 14
+                "Fname\n12 42 4\n\n7\n12 42 9\n7\n15 10\n15 10 25\n15 10\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_line_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
     }
 };

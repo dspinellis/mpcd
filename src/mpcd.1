@@ -45,3 +45,15 @@ Written by Diomidis Spinellis.
 For performance reasons no checks are made on the validity of the input
 stream.
 Invalid input may result in a crash.
+
+Reported clones are regions that have the same tokens up to the specified
+length,
+extended to the end of the last line,
+and then extended as a group line-by-line to cover as many tokens as
+possible,
+as long as all group members are the same.
+No attempt is made to split groups into longer ones covering
+differing regions.
+
+Reported clones may overlap.
+This may be a feature.

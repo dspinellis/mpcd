@@ -108,6 +108,11 @@ public:
         return tokens.begin() + line_offsets[line_number];
     }
 
+    // Return an iterator on the file's end
+    tokens_type::const_iterator file_end() const {
+        return tokens.end();
+    }
+
     // Return an iterator to the tokens starting at the specified offset
     tokens_type::const_iterator offset_begin(token_offset_type o) const {
         return tokens.begin() + o;
@@ -123,6 +128,15 @@ public:
         // First line with an offset greater than o
         auto upper = std::upper_bound(line_offsets.begin(), line_offsets.end(), o);
         return std::distance(line_offsets.begin(), upper) - 1;
+    }
+
+    // Return an iterator to the end of the line to which a token belongs
+    tokens_type::const_iterator line_from_offset_end(token_offset_type o) const {
+        auto next_line_number = get_token_line_number(o) + 1;
+        if (next_line_number == line_offsets.size())
+            return file_end();
+        else
+            return tokens.begin() + line_offsets[next_line_number];
     }
 };
 
@@ -171,5 +185,12 @@ public:
     FileData::tokens_type::const_iterator offset_begin(file_id_type file_id,
              FileData::token_offset_type offset) const {
         return file_data[file_id].offset_begin(offset);
+    }
+
+    // Return an iterator to line end of tokens starting in the specified offset
+    FileData::tokens_type::const_iterator line_from_offset_end(file_id_type file_id,
+             FileData::token_offset_type offset) const {
+
+        return file_data[file_id].line_from_offset_end(offset);
     }
 };
