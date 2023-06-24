@@ -20,18 +20,18 @@
 
 #include <vector>
 
-// A constant view of a vector
-template <typename T>
-class ConstVectorView {
-    const std::vector<T>& vec;
+// A constant view of a collection
+template <typename C>
+class ConstCollectionView {
+    const C& col;
 public:
-    ConstVectorView(const std::vector<T>& vec) : vec(vec) {}
+    ConstCollectionView(const C& col) : col(col) {}
 
-    typename std::vector<T>::const_iterator begin() const {
-        return vec.begin();
+    typename C::const_iterator begin() const {
+        return col.begin();
     }
-    typename std::vector<T>::const_iterator end() const {
-        return vec.end();
+    typename C::const_iterator end() const {
+        return col.end();
     }
 };
 
@@ -48,8 +48,8 @@ public:
         size_type operator*() const { return index; }
         const iterator& operator++() { ++index; return *this; }
         bool operator!=(const iterator& other) const {
-		return index != other.index;
-	}
+            return index != other.index;
+        }
     };
 
     iterator begin() const { return iterator(0); }

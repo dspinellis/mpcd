@@ -12,6 +12,10 @@ class CloneDetectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_insert);
     CPPUNIT_TEST(test_prune_non_clones);
     CPPUNIT_TEST(test_create_line_region_clones);
+    CPPUNIT_TEST(test_create_line_extended_region_clones);
+    CPPUNIT_TEST(test_extend_clones_same);
+    CPPUNIT_TEST(test_extend_clones_different);
+    CPPUNIT_TEST(test_extend_clones_two_lines);
     CPPUNIT_TEST_SUITE_END();
 public:
     void test_size() {
@@ -75,5 +79,97 @@ public:
         cd.create_line_region_clones();
         CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
         CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+    }
+
+    void test_create_line_extended_region_clones() {
+        std::istringstream iss(
+        //              0  1  2    3  4  5  6
+                "Fname\n12 42 4\n\n7\n12 42 4");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_line_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+
+        for (auto clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (auto clone: clone_group) {
+                CPPUNIT_ASSERT_EQUAL(size_t(3), clone.size());
+            }
+        }
+    }
+
+    void test_extend_clones_same() {
+        //                             0  1  2  3  4  5  6  7  8 9
+        std::istringstream iss("Fname\n12 42 3\n4\n7\n12 42 3\n4");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_line_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+
+        for (auto clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (auto clone: clone_group)
+                CPPUNIT_ASSERT_EQUAL(size_t(3), clone.size());
+        }
+
+        cd.extend_clones();
+        for (auto clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (auto clone: clone_group)
+                CPPUNIT_ASSERT_EQUAL(size_t(4), clone.size());
+        }
+    }
+
+    void test_extend_clones_different() {
+        //                             0  1  2  3  4  5  6  7  8 9
+        std::istringstream iss("Fname\n12 42 3\n4 5\n7\n12 42 3\n4 6");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_line_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+
+        for (auto clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (auto clone: clone_group)
+                CPPUNIT_ASSERT_EQUAL(size_t(3), clone.size());
+        }
+
+        cd.extend_clones();
+        for (auto clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (auto clone: clone_group)
+                CPPUNIT_ASSERT_EQUAL(size_t(3), clone.size());
+        }
+    }
+
+    void test_extend_clones_two_lines() {
+        //                             0  1  2  3  4  5  6  7  8 9
+        std::istringstream iss("Fname\n12 42 3\n4 5\n6 7\n\n7 8\n12 42 3\n4 5\n6 7\n7 9");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 3);
+        cd.prune_non_clones();
+        cd.create_line_region_clones();
+
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(4, cd.get_number_of_clones());
+
+        for (auto clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (auto clone: clone_group)
+                CPPUNIT_ASSERT(clone.size() == 3 || clone.size() == 4);
+        }
+
+        cd.extend_clones();
+        for (auto clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (auto clone: clone_group)
+                CPPUNIT_ASSERT(clone.size() == 4 || clone.size() == 7);
+        }
     }
 };

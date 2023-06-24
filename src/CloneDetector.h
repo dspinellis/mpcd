@@ -89,6 +89,13 @@ public:
     FileData::token_offset_type get_end_token_offset() const {
         return FileData::token_offset_type(end_offset);
     }
+
+    void set_end_token_offset(FileData::token_offset_type offset) {
+        end_offset = offset;
+    }
+
+    void extend_by_one() { end_offset++; }
+
 };
 
 inline bool operator<(const CloneLocation& lhs, const CloneLocation& rhs) {
@@ -155,6 +162,23 @@ private:
             it->second.push_back(location);
     }
 
+    /*
+     * Return the token immediately past the end (i.e. at the end)
+     * of the specified clone.
+     * If the end coincides with the file's end, return 0.
+     */
+    FileData::token_type get_end_token(const Clone& clone) {
+        return token_container.get_token(clone.get_file_id(),
+                clone.get_end_token_offset());
+    }
+
+    // Trim the clone extent to the nearest EOL
+    void trim_to_eol(Clone& clone) {
+        clone.set_end_token_offset(token_container.get_preceding_eol_offset(
+                    clone.get_file_id(),
+                    clone.get_end_token_offset()));
+    }
+
 public:
     CloneDetector(const TokenContainer &tc, unsigned clone_length);
 
@@ -163,6 +187,13 @@ public:
 
     // Convert candidate clones from "seen" into "clone"
     void create_line_region_clones();
+
+    // Extend clones to subsequent lines if possible
+    void extend_clones();
+
+    ConstCollectionView<decltype(clones)> clone_view() const {
+        return clones;
+    }
 
     // Report found clones
     void report() const;

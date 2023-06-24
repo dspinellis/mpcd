@@ -102,8 +102,8 @@ CloneDetector::create_line_region_clones()
         int group_size = 0;
         for (auto member : it.second) {
             auto member_extension_begin = token_container.offset_begin(member.get_file_id(), member.get_begin_token_offset() + clone_length);
-            auto member_end_line_offset = member.get_begin_token_offset() + clone_length - 1;
-            auto member_line_end = token_container.line_from_offset_end(member.get_file_id(), member_end_line_offset);
+            auto offset_in_last_line = member.get_begin_token_offset() + clone_length - 1;
+            auto member_line_end = token_container.line_from_offset_end(member.get_file_id(), offset_in_last_line);
 
             // Unequal line length extensions
             if (member_line_end - member_extension_begin != leader_extension_length)
@@ -111,11 +111,37 @@ CloneDetector::create_line_region_clones()
             // Unequal extension contents
             if (!std::equal(leader_extension_begin, leader_line_end, member_extension_begin))
                 continue;
+            auto member_end_offset = member.get_begin_token_offset() + clone_length + leader_extension_length;
             group.emplace_back(Clone(member.get_file_id(),
-                        member.get_begin_token_offset(), member_end_line_offset));
+                        member.get_begin_token_offset(), member_end_offset));
             group_size++;
         }
         if (group_size > 1)
             clones.push_back(std::move(group));
+    }
+}
+
+// Extend clones to subsequent lines as much as possible
+void
+CloneDetector::extend_clones()
+{
+    for (auto& clone_group : clones) {
+        // Extend group members as much as possible
+        for (;;) {
+            auto leader = clone_group.begin();
+            auto leader_end_token = get_end_token(*leader);
+            auto member = ++leader;
+            for (; member != clone_group.end(); member++)
+                if (get_end_token(*member) != leader_end_token)
+                    break;
+            if (member != clone_group.end())
+                break;  // Difference found; stop advancing
+            // Extend all group's members by one token
+            for (auto& member : clone_group)
+                member.extend_by_one();
+        }
+        // Trim all members to preceding end of line
+        for (auto& member : clone_group)
+            trim_to_eol(member);
     }
 }

@@ -54,6 +54,7 @@ main(int argc, char * const argv[])
     CloneDetector cd(tc, clone_tokens);
     cd.prune_non_clones();
     cd.create_line_region_clones();
+    cd.extend_clones();
     cd.report();
 
     exit(EXIT_SUCCESS);

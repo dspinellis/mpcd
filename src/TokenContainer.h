@@ -46,6 +46,7 @@ private:
 
     // Tokens of all files
     tokens_type tokens;
+
 public:
     typedef tokens_type::size_type token_offset_type;
 
@@ -65,7 +66,7 @@ public:
         tokens.push_back(token);
     }
 
-    // Add a line at the end
+    // Add a line's offset at the end of the existing vector's elements
     void add_line() {
         line_offsets.push_back(tokens.size());
     }
@@ -124,9 +125,9 @@ public:
     }
 
     // Return the (0-based) line number to which a token belongs
-    line_number_type get_token_line_number(token_offset_type o) const {
-        // First line with an offset greater than o
-        auto upper = std::upper_bound(line_offsets.begin(), line_offsets.end(), o);
+    line_number_type get_token_line_number(token_offset_type offset) const {
+        // First line with an offset greater than offset
+        auto upper = std::upper_bound(line_offsets.begin(), line_offsets.end(), offset);
         return std::distance(line_offsets.begin(), upper) - 1;
     }
 
@@ -137,6 +138,22 @@ public:
             return file_end();
         else
             return tokens.begin() + line_offsets[next_line_number];
+    }
+
+    // Return the token at the specified location; 0 if at EOF
+    FileData::token_type get_token(FileData::token_offset_type offset) const {
+        if (tokens.begin() + offset == tokens.end())
+            return 0;
+        return tokens[offset];
+    }
+
+    // Return the end-offset of the line lying immediately before the offset
+    FileData::token_offset_type get_preceding_eol_offset(
+        FileData::token_offset_type offset) const {
+        if (offset == tokens.size())
+            return tokens.size();
+        auto line_number = get_token_line_number(offset);
+        return line_offsets[line_number];
     }
 };
 
@@ -161,13 +178,13 @@ private:
         file_data.back().add_line();
     }
 public:
-    typedef decltype(file_data)::size_type file_id_type;
+    typedef FileDataCollection::size_type file_id_type;
 
     // Construct from an input stream
     TokenContainer(std::istream &in);
 
     // Return an iterator over the container's files
-    ConstVectorView<decltype(file_data)::value_type> file_view() const {
+    ConstCollectionView<FileDataCollection> file_view() const {
         return file_data;
     }
 
@@ -189,8 +206,19 @@ public:
 
     // Return an iterator to line end of tokens starting in the specified offset
     FileData::tokens_type::const_iterator line_from_offset_end(file_id_type file_id,
-             FileData::token_offset_type offset) const {
-
+            FileData::token_offset_type offset) const {
         return file_data[file_id].line_from_offset_end(offset);
+    }
+
+    // Return the token at the specified location; 0 if at EOF
+    FileData::token_type get_token(file_id_type file_id,
+            FileData::token_offset_type offset) const {
+        return file_data[file_id].get_token(offset);
+    }
+
+    // Return the end-offset of the line lying immediately before the offset
+    FileData::token_offset_type get_preceding_eol_offset(file_id_type file_id,
+            FileData::token_offset_type offset) const {
+        return file_data[file_id].get_preceding_eol_offset(offset);
     }
 };
