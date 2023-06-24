@@ -1,7 +1,29 @@
 # mpcd: modular performant clone detector
 
-Read from the standard input tokenized files and output
-sets of clones.
+Read from the standard input tokenized files and output sets of clones.
+
+The _mpcd_ modular performant clone detector is yet another attempt to
+implement a code clone detector.
+The rationale for building it was to address shortcomings of existing systems
+in the areas of flexibility and performance.
+
+On the flexibility front _mpcd_ splits the functionality often found
+in other systems into three parts: locating the files to examine,
+extracting elements that can be recognized as clones (tokenization), and
+identifying clones.
+The _mpcd_ tool is structured so as to allow the first two parts to be
+performed independently of it.
+Specifically, in an _mpcd_ workflow file location is handled by external
+tools, such as _find_(1) or _git-ls-tree_(1),
+while tokenization is also handled by an another external tool,
+such as [tokenizer](https://github.com/dspinellis/tokenizer).
+
+To maximize performance _mpcd_ is implemented in C++ with
+statically typed objects structured to avoid the memory overheads of boxing,
+and
+data structures carefully chosen and used to achieve high and scalable
+runtime performance.
+
 
 ## Build
 
