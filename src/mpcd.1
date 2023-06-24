@@ -6,8 +6,24 @@
 .SH DESCRIPTION
 The \fBmpcd\fR utility reads from its standard input a stream
 of file identifiers (e.g. file paths) prefixed with F,
-followed by each file's tokens for each line in the range 0–699.
+followed by each file's tokens for each line in the range 0\^\(en\^699.
 It reports on its standard output identified code clones.
+Each clone is reported in the following format.
+.RS
+.TP
+\(bu
+One line containing the number of clones in the group and
+the number of tokens in each group's element.
+.TP
+\(bu
+One line for each clone group element containing
+the start line, the end line, and the file identifier.
+.TP
+\(bu
+A blank line.
+.RE
+All the above elements are tab-separated.
+
 
 .SH OPTIONS
 The behavior of the \fBmpcd\fR utility can be controlled
@@ -21,9 +37,10 @@ The default value is 15.
 
 .RE
 
-.SH EXAMPLE
+.SH EXAMPLES
 .PP
-Identify clones for all Java files located in the src directory.
+Identify clones in all Java files located in the \fCsrc\fP directory.
+
 .ft C
 .nf
 find src -type f -name '*.java' -print0 |
@@ -32,6 +49,22 @@ while IFS= read -r -d '' file; do
   tokenizer -l Java -o line -t N "$file"
 done |
 mpcd
+.ft P
+.fi
+
+Find clones in the \fCkernel\fP directory of the Linux kernel v6.3,
+which is stored in a bare Git repository named \fClinux.git\fP.
+
+.ft C
+.nf
+git --git-dir linux.git ls-tree -r --name-only v6.3 -- kernel |
+grep '\.[ch]$' |
+while read file; do
+  echo "F$file"
+  git --git-dir linux.git show "v6.3:$file" |
+  tokenizer -l C -o line -t N
+done |
+mpcd -n 40
 .ft P
 .fi
 
