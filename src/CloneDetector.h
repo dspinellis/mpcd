@@ -51,7 +51,9 @@ public:
         file_id((file_id_type)file_id),
         begin_offset((token_offset_type)begin_offset) {}
 
-    friend bool operator<(const CloneLocation& lhs, const CloneLocation& rhs);
+    friend bool operator<(const CloneLocation& lhs, const CloneLocation& rhs) {
+        return lhs.file_id < rhs.file_id || lhs.begin_offset < rhs.begin_offset;
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const CloneLocation &l) {
         os << l.file_id << '.' << l.begin_offset;
@@ -97,10 +99,6 @@ public:
     void extend_by_one() { end_offset++; }
 
 };
-
-inline bool operator<(const CloneLocation& lhs, const CloneLocation& rhs) {
-    return lhs.file_id < rhs.file_id || lhs.begin_offset < rhs.begin_offset;
-}
 
 /*
  * A single arbitrary clone location acts as a template for identifying
