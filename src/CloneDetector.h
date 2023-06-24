@@ -19,7 +19,7 @@
 #pragma once
 
 #include <list>
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <ostream>
 
@@ -98,6 +98,10 @@ public:
 
 };
 
+inline bool operator<(const CloneLocation& lhs, const CloneLocation& rhs) {
+    return lhs.file_id < rhs.file_id || lhs.begin_offset < rhs.begin_offset;
+}
+
 /*
  * A single arbitrary clone location acts as a template for identifying
  * all identical to it tokens that have been encountered.
@@ -129,27 +133,7 @@ public:
     static void set_clone_length(unsigned cl) { clone_length = cl; }
     static unsigned get_clone_length() { return clone_length; }
 
-    // For map
     friend bool operator<(const SeenTokens& lhs, const SeenTokens& rhs);
-
-    // For unordered_map
-    friend bool operator==(const SeenTokens& lhs, const SeenTokens& rhs);
-
-    friend struct SeenTokensHash;
-};
-
-struct SeenTokensHash {
-    std::size_t operator()(const SeenTokens& t) const {
-
-        std::size_t seed = 0;
-        auto begin = SeenTokens::get_token_container()->offset_begin(t.get_file_id(), t.get_begin_token_offset());
-        auto end = begin + SeenTokens::get_clone_length();
-        for(auto it = begin; it != end; ++it) {
-            // Combine the hash of the current element with the running seed.
-            seed ^= std::hash<unsigned int>{}(*it) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        }
-        return seed;
-    }
 };
 
 class CloneDetector {
@@ -161,7 +145,7 @@ private:
     const TokenContainer &token_container;
 
     // Tokens that have been encountered in the examined code (token_container)
-    std::unordered_map<SeenTokens, seen_locations_type, SeenTokensHash> seen;
+    std::map<SeenTokens, seen_locations_type> seen;
 
     // Minimum length of clones to be detected
     unsigned clone_length;

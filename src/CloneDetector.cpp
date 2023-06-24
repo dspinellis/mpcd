@@ -88,17 +88,6 @@ operator<(const SeenTokens& lhs, const SeenTokens& rhs) {
             rhs_it, rhs_it + clone_length);
 }
 
-// Return true if the tokens are the same
-bool
-operator==(const SeenTokens& lhs, const SeenTokens& rhs) {
-    const TokenContainer* tc = SeenTokens::get_token_container();
-    unsigned clone_length  = SeenTokens::get_clone_length();
-
-    auto lhs_it = tc->offset_begin(lhs.get_file_id(), lhs.get_begin_token_offset());
-    auto rhs_it = tc->offset_begin(rhs.get_file_id(), rhs.get_begin_token_offset());
-    return std::equal(lhs_it, lhs_it + clone_length, rhs_it);
-}
-
 // Create partial candidate clones in "seen" into full clones in "clone"
 void
 CloneDetector::create_line_region_clones()
