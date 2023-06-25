@@ -62,7 +62,7 @@ public:
             FileData::line_number_type n = 0;
             for (const auto& line : file.line_view()) {
                 CPPUNIT_ASSERT_EQUAL(n, line);
-                n++;
+                ++n;
             }
         }
     }

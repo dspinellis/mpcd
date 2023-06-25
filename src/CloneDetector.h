@@ -106,7 +106,7 @@ public:
 
     // Extend the clone's coverage by one token
     void extend_by_one() {
-        end_offset++;
+        ++end_offset;
     }
 
     // Return true if the clone is entirely shadowed by the passed one
