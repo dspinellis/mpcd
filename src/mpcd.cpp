@@ -97,6 +97,13 @@ main(int argc, char * const argv[])
             << std::endl;
     }
 
+    cd.remove_shadowed_groups();
+    if (verbose)
+        std::cerr << "Removed shadowed clone groups, with the result being "
+            << cd.get_number_of_clones() << " clones in "
+            << cd.get_number_of_clone_groups() << " groups."
+            << std::endl;
+
     cd.report();
 
     exit(EXIT_SUCCESS);

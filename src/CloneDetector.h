@@ -72,14 +72,18 @@ public:
 // The location and extent of a clone
 class Clone: public CloneLocation {
 private:
+    // Where the clone ends
     token_offset_type end_offset;
+
+    // True if the clone's region is entirely shadowed by another
+    bool shadowed;
 
 public:
     Clone(TokenContainer::file_id_type file_id,
             FileData::token_offset_type begin_offset,
             FileData::token_offset_type end_offset) :
         CloneLocation(file_id, begin_offset),
-        end_offset(token_offset_type(end_offset)) {}
+        end_offset(token_offset_type(end_offset)), shadowed(false) {}
 
     // Return the clone's size in tokens
     std::size_t size() const {
@@ -91,6 +95,7 @@ public:
         return os;
     }
 
+    // Return the clone's end offset
     FileData::token_offset_type get_end_token_offset() const {
         return FileData::token_offset_type(end_offset);
     }
@@ -102,6 +107,21 @@ public:
     // Extend the clone's coverage by one token
     void extend_by_one() {
         end_offset++;
+    }
+
+    // Return true if the clone is entirely shadowed by the passed one
+    bool is_shadowed(const Clone& shadow) const {
+        return shadow.begin_offset <= begin_offset
+            && shadow.end_offset >= end_offset;
+    }
+
+    // Return true if the clone has been marked shadowed
+    bool is_shadowed() const {
+        return shadowed;
+    }
+
+    void set_shadowed() {
+        shadowed = true;
     }
 };
 
@@ -194,6 +214,10 @@ public:
     // Extend clones to subsequent lines if possible
     void extend_clones();
 
+    // Remove clone groups whose members are entirely shadowed by others
+    void remove_shadowed_groups();
+
+    // Return a read-only view of all clones
     ConstCollectionView<decltype(clones)> clone_view() const {
         return clones;
     }

@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <set>
 
 #include "CloneDetector.h"
 
@@ -145,5 +146,57 @@ CloneDetector::extend_clones()
         // Trim all members to preceding end of line
         for (auto& member : clone_group)
             trim_to_eol(member);
+    }
+}
+
+/*
+ * Remove clone groups whose members are entirely shadowed by others.
+ *
+ * 1. Create a set ordered by and clone location.
+ * 2. Traverse the set, marking elements completely shadowed by their
+ *    predecessor in the same file as shadowed.
+ * 3. Traverse the clone groups removing those that have all their elements
+ *    shadowed.
+ */
+void
+CloneDetector::remove_shadowed_groups()
+{
+    struct Compare {
+        bool operator() (const Clone* lhs, const Clone* rhs) const {
+            return *lhs < *rhs;
+        }
+    };
+
+    std::set<Clone*, Compare> ordered_clones;
+
+    // Create a set ordered by and clone location.
+    for (auto& clone_group : clones)
+        for (auto& clone : clone_group)
+            ordered_clones.insert(&clone);
+
+    // Mark clones
+    Clone* shadow = nullptr;
+    for (auto& clone : ordered_clones) {
+        // Clear shadow when crossing file boundary
+        if (shadow && shadow->get_file_id() != clone->get_file_id())
+            shadow = nullptr;
+
+        if (shadow && clone->is_shadowed(*shadow))
+            clone->set_shadowed();
+        shadow = clone;
+    }
+
+    // Remove entirely shadowed clone groups
+    for (auto group_it = clones.begin(); group_it != clones.end(); ) {
+        auto clone_it = group_it->begin();
+        for (; clone_it != group_it->end(); ++clone_it)
+            if (!clone_it->is_shadowed())
+                break;
+
+        // See if entirely shadowed and erase
+        if (clone_it == group_it->end())
+            group_it = clones.erase(group_it);
+        else
+            ++group_it;
     }
 }

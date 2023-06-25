@@ -16,6 +16,7 @@ class CloneDetectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_extend_clones_same);
     CPPUNIT_TEST(test_extend_clones_different);
     CPPUNIT_TEST(test_extend_clones_two_lines);
+    CPPUNIT_TEST(test_remove_shadowed_groups);
     CPPUNIT_TEST_SUITE_END();
 public:
     void test_size() {
@@ -171,5 +172,24 @@ public:
             for (const auto& clone: clone_group)
                 CPPUNIT_ASSERT(clone.size() == 4 || clone.size() == 7);
         }
+    }
+
+    void test_remove_shadowed_groups() {
+        std::istringstream iss("Fname\n12 42 3\n4 7\n12 42 3\n4 7");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_line_region_clones();
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(4, cd.get_number_of_clones());
+        CPPUNIT_ASSERT_EQUAL(std::size_t(5), cd.get_number_of_clone_tokens());
+
+        cd.extend_clones();
+        CPPUNIT_ASSERT_EQUAL(std::size_t(7), cd.get_number_of_clone_tokens());
+
+        cd.remove_shadowed_groups();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+        CPPUNIT_ASSERT_EQUAL(std::size_t(5), cd.get_number_of_clone_tokens());
     }
 };
