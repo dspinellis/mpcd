@@ -41,19 +41,19 @@ class IndexRange {
 public:
     using size_type = typename T::size_type;
 
-    class iterator {
+    class ConstIterator {
         size_type index;
     public:
-        iterator(size_type index) : index(index) {}
+        ConstIterator(size_type index) : index(index) {}
         size_type operator*() const { return index; }
-        const iterator& operator++() { ++index; return *this; }
-        bool operator!=(const iterator& other) const {
+        const ConstIterator& operator++() { ++index; return *this; }
+        bool operator!=(const ConstIterator& other) const {
             return index != other.index;
         }
     };
 
-    iterator begin() const { return iterator(0); }
-    iterator end() const { return iterator(size); }
+    ConstIterator begin() const { return ConstIterator(0); }
+    ConstIterator end() const { return ConstIterator(size); }
 
     IndexRange(size_type size) : size(size) {}
 

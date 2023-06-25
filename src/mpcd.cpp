@@ -34,8 +34,9 @@ main(int argc, char * const argv[])
 {
     int opt;
     int clone_tokens = 15; // Minimum number of same tokens to identify a clone
+    bool verbose = false;
 
-    while ((opt = getopt(argc, argv, "n:")) != -1)
+    while ((opt = getopt(argc, argv, "n:v")) != -1)
         switch (opt) {
         case 'n':
             clone_tokens = std::atoi(optarg);
@@ -44,17 +45,58 @@ main(int argc, char * const argv[])
                 exit(EXIT_FAILURE);
             }
             break;
+        case 'v':
+            verbose = true;
+            break;
         default: /* ? */
             std::cerr << "Usage: " << argv[0] <<
-                " [-n tokens]" << std::endl;
+                " [-v] [-n tokens]" << std::endl;
             exit(EXIT_FAILURE);
         }
 
+    if (verbose)
+        std::cerr << "Reading input tokens." << std::endl;
     TokenContainer tc(std::cin);
+    if (verbose)
+        std::cerr << "Read "
+            << tc.file_size() << " files, "
+            << tc.line_size() << " lines, "
+            << tc.token_size() << " tokens."
+            << std::endl;
+
     CloneDetector cd(tc, clone_tokens);
+    if (verbose)
+        std::cerr << "Identified "
+            << cd.get_number_of_seen_clones() << " potential clones in "
+            << cd.get_number_of_seen_sites() << " total sites."
+            << std::endl;
+
     cd.prune_non_clones();
+    if (verbose)
+        std::cerr << "Pruned non-clone sites leaving "
+            << cd.get_number_of_seen_sites() << " sites."
+            << std::endl;
+
     cd.create_line_region_clones();
+    if (verbose) {
+        std::cerr << "Identified " << cd.get_number_of_clones()
+            << " clones in " << cd.get_number_of_clone_groups() << " groups."
+            << std::endl;
+        std::cerr << "Each clone element is on average "
+            << cd.get_number_of_clone_tokens() / cd.get_number_of_clone_groups()
+            << " tokens long."
+            << std::endl;
+    }
+
     cd.extend_clones();
+    if (verbose) {
+        std::cerr << "Extended clones to their maximal size." << std::endl;
+        std::cerr << "Each clone element is on average "
+            << cd.get_number_of_clone_tokens() / cd.get_number_of_clone_groups()
+            << " tokens long."
+            << std::endl;
+    }
+
     cd.report();
 
     exit(EXIT_SUCCESS);

@@ -81,7 +81,10 @@ public:
         CloneLocation(file_id, begin_offset),
         end_offset(token_offset_type(end_offset)) {}
 
-    size_t size() const { return end_offset - begin_offset; }
+    // Return the clone's size in tokens
+    std::size_t size() const {
+        return end_offset - begin_offset;
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const Clone &l) {
         os << l.file_id << '.' << l.begin_offset << '-' << l.end_offset;
@@ -96,8 +99,10 @@ public:
         end_offset = offset;
     }
 
-    void extend_by_one() { end_offset++; }
-
+    // Extend the clone's coverage by one token
+    void extend_by_one() {
+        end_offset++;
+    }
 };
 
 /*
@@ -204,14 +209,13 @@ public:
         int nclones = 0;
         for (const auto& it : seen) {
             size_t nelem = it.second.size();
-            // std::cout << "CHECK: " << it.first << "\n";
             if (nelem > 1)
                 nclones += nelem;
         }
         return nclones;
     }
 
-    // Return the number of actual clone groups (for testing)
+    // Return the number of actual clone groups
     int get_number_of_clone_groups() { return clones.size(); }
 
     int get_number_of_clones() {
@@ -219,5 +223,17 @@ public:
         for (const auto& it : clones)
             nclones += it.size();
         return nclones;
+    }
+
+    /*
+     * Return the total number of clone tokens covered by clone groups.
+     * Each clone group is counted once.
+     */
+    std::size_t get_number_of_clone_tokens()
+    {
+        std::size_t ntokens = 0;
+        for (auto& clone_group : clones)
+            ntokens += clone_group.front().size();
+        return ntokens;
     }
 };

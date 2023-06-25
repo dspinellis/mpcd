@@ -66,6 +66,16 @@ public:
         tokens.push_back(token);
     }
 
+    // Return file's number of lines
+    std::size_t line_size() const {
+        return line_offsets.size();
+    }
+
+    // Return file's number of tokens
+    std::size_t token_size() const {
+        return tokens.size();
+    }
+
     // Add a line's offset at the end of the existing vector's elements
     void add_line() {
         line_offsets.push_back(tokens.size());
@@ -187,6 +197,29 @@ public:
     ConstCollectionView<FileDataCollection> file_view() const {
         return file_data;
     }
+
+    // Return number of files
+    std::size_t file_size() const {
+        return file_data.size();
+    }
+
+    // Return number of tokens
+    std::size_t token_size() const {
+        std::size_t ntokens = 0;
+        for (auto& file : file_data)
+            ntokens += file.token_size();
+        return ntokens;
+    }
+
+    // Return number of lines
+    std::size_t line_size() const {
+        std::size_t nlines = 0;
+        for (auto& file : file_data)
+            nlines += file.line_size();
+        return nlines;
+    }
+
+    // Return number of tokens
 
     // Return a file's name
     const std::string& get_file_name(file_id_type id) const {

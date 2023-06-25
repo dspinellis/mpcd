@@ -2,7 +2,7 @@
 .SH NAME
 \fBmpcd\fR \(en report code clones
 .SH SYNOPSIS
-\fBmpcd\fR [\fB\-n \fIclone-length\fR]
+\fBmpcd\fR [\fB\-v\fR] [\fB\-n \fIclone-length\fR]
 .SH DESCRIPTION
 The \fBmpcd\fR utility reads from its standard input a stream
 of file identifiers (e.g. file paths) prefixed with F,
@@ -35,6 +35,10 @@ through the following command-line option.
 Specify the minimum length of clones that will be detected.
 The default value is 15.
 
+.TP
+.BI "-v "
+Produce verbose output on the standard error with processing details.
+
 .RE
 
 .SH EXAMPLES
@@ -48,12 +52,13 @@ while IFS= read -r -d '' file; do
   echo "F$file"
   tokenizer -l Java -o line -t N "$file"
 done |
-mpcd
+mpcd >results.txt
 .ft P
 .fi
 
 Find clones in the \fCkernel\fP directory of the Linux kernel v6.3,
 which is stored in a bare Git repository named \fClinux.git\fP.
+Adjust clone size to 40 tokens and generate verbose output while processing.
 
 .ft C
 .nf
@@ -64,7 +69,7 @@ while read file; do
   git --git-dir linux.git show "v6.3:$file" |
   tokenizer -l C -o line -t N
 done |
-mpcd -n 40
+mpcd -v -n 40 >results.txt
 .ft P
 .fi
 

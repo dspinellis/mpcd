@@ -130,10 +130,10 @@ CloneDetector::extend_clones()
     for (auto& clone_group : clones) {
         // Extend group members as much as possible
         for (;;) {
-            auto leader = clone_group.begin();
-            auto leader_end_token = get_end_token(*leader);
-            auto member = ++leader;
-            for (; member != clone_group.end(); member++)
+            auto& leader(clone_group.front());
+            auto leader_end_token = get_end_token(leader);
+            auto member = clone_group.begin();
+            for (++member; member != clone_group.end(); member++)
                 if (get_end_token(*member) != leader_end_token)
                     break;
             if (member != clone_group.end())
