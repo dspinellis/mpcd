@@ -56,7 +56,7 @@ the \fC-g\fP option to process all identifiers in the same (global) scope.
 find src -type f -name '*.java' |
 
 # Tokenize files in paths coming from stdin, using the same scope for all ids
-tokenizer -l Java -o line -l - -g -f |
+tokenizer -l Java -o line -i - -g -f |
 
 # Identify clones
 mpcd >results.txt
