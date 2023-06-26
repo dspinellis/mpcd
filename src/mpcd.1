@@ -2,7 +2,7 @@
 .SH NAME
 \fBmpcd\fR \(en report code clones
 .SH SYNOPSIS
-\fBmpcd\fR [\fB\-v\fR] [\fB\-n \fIclone-length\fR]
+\fBmpcd\fR [\fB\-jv\fR] [\fB\-n \fIclone-length\fR]
 .SH DESCRIPTION
 The \fBmpcd\fR utility reads from its standard input a stream
 of file identifiers (e.g. file paths) prefixed with F,
@@ -29,6 +29,10 @@ All the above elements are tab-separated.
 The behavior of the \fBmpcd\fR utility can be controlled
 through the following command-line option.
 .RS 3
+
+.TP
+.BI "-j "
+Produce JSON rather than plain text output.
 
 .TP
 .BI "-n " clone-length

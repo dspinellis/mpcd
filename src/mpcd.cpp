@@ -35,9 +35,13 @@ main(int argc, char * const argv[])
     int opt;
     int clone_tokens = 15; // Minimum number of same tokens to identify a clone
     bool verbose = false;
+    bool json = false;
 
-    while ((opt = getopt(argc, argv, "n:v")) != -1)
+    while ((opt = getopt(argc, argv, "jn:v")) != -1)
         switch (opt) {
+        case 'j':
+            json = true;
+            break;
         case 'n':
             clone_tokens = std::atoi(optarg);
             if (clone_tokens == 0) {
@@ -50,7 +54,7 @@ main(int argc, char * const argv[])
             break;
         default: /* ? */
             std::cerr << "Usage: " << argv[0] <<
-                " [-v] [-n tokens]" << std::endl;
+                " [-jv] [-n tokens]" << std::endl;
             exit(EXIT_FAILURE);
         }
 
@@ -104,7 +108,10 @@ main(int argc, char * const argv[])
             << cd.get_number_of_clone_groups() << " groups."
             << std::endl;
 
-    cd.report();
+    if (json)
+        cd.report_json();
+    else
+        cd.report_text();
 
     exit(EXIT_SUCCESS);
 }

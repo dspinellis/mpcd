@@ -56,9 +56,9 @@ CloneDetector::prune_non_clones() {
             ++it;
 }
 
-// Report found clones
+// Report found clones in text format
 void
-CloneDetector::report() const {
+CloneDetector::report_text() const {
     for (const auto& clone_group : clones) {
         std::cout << clone_group.size() << "\t";
         std::cout << clone_group.front().size() << std::endl;
@@ -69,6 +69,69 @@ CloneDetector::report() const {
         }
         std::cout << std::endl;
     }
+}
+
+// Escape characters to make a string valid JSON string
+std::string
+escape_json_string(const std::string& input) {
+    std::string result;
+
+    for (char c : input) {
+        switch (c) {
+        case '"':
+            result += "\\\"";
+            break;
+        case '\\':
+            result += "\\\\";
+            break;
+        default:
+            result += c;
+        }
+    }
+    return result;
+}
+
+// Report found clones in JSON format
+void
+CloneDetector::report_json() const {
+    std::cout << "[" << std::endl;
+    // For each clone group
+    for (auto cg_it = clones.begin(); cg_it != clones.end(); ++cg_it) {
+        std::cout << "  {" << std::endl;
+        std::cout << "    \"number_of_clones\": "
+            << cg_it->size() << ',' << std::endl;
+        std::cout << "    \"tokens\": "
+            << cg_it->front().size() << ',' << std::endl;
+        std::cout << "    \"pairs\": [" << std::endl;
+
+        // For each member of the clone group
+        for (auto member_it = cg_it->begin(); member_it != cg_it->end(); ++member_it) {
+            std::cout << "      {" << std::endl;
+            std::cout << "        \"start\": "
+                << token_container.get_token_line_number(member_it->get_file_id(), member_it->get_begin_token_offset()) + 1
+                << ',' << std::endl;
+
+            std::cout << "        \"end\": "
+                << token_container.get_token_line_number(member_it->get_file_id(), member_it->get_end_token_offset()) + 1
+                << ',' << std::endl;
+
+            std::cout << "        \"filepath\": \""
+                << escape_json_string(
+                        token_container.get_file_name(member_it->get_file_id()))
+                << '"' << std::endl;
+
+            if (std::next(member_it) == cg_it->end())
+                std::cout << "      }" << std::endl;
+            else
+                std::cout << "      }," << std::endl;
+        }
+        std::cout << "    ]" << std::endl;
+        if (std::next(cg_it) == clones.end())
+            std::cout << "  }" << std::endl;
+        else
+            std::cout << "  }," << std::endl;
+    }
+    std::cout << "]" << std::endl;
 }
 
 // Container holding the encountered tokens

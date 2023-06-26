@@ -223,7 +223,8 @@ public:
     }
 
     // Report found clones
-    void report() const;
+    void report_text() const;
+    void report_json() const;
 
     // Return the number of sites for potential clones (for testing)
     int get_number_of_seen_sites() { return seen.size(); }
