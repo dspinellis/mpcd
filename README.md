@@ -1,4 +1,4 @@
-![Build Status](https://img.shields.io/github/actions/workflow/status/dspinellis/mpld/main.yml?branch=main)
+![Build Status](https://img.shields.io/github/actions/workflow/status/dspinellis/mpcd/main.yml?branch=main)
 
 # mpcd: modular performant clone detector
 
