@@ -57,8 +57,9 @@ sudo make install
 ## Run
 
 The clone detector's input is a stream of file identifiers
-(e.g. file paths) prefixed with `F`, followed by each file's
-tokens for each line in the range 0–699.
+(e.g. file paths) prefixed with `F`,
+followed by each file's
+tokens for each line as integers in the range 0–4294967295 (2³² – 1).
 These can be obtained by applying the
 [tokenizer](https://github.com/dspinellis/tokenizer) program on each file.
 
