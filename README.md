@@ -78,16 +78,17 @@ find src -type f -name '*.java' |
 tokenizer -l Java -o line -i - -g -f |
 
 # Identify clones
-mpcd -j >results.txt
+mpcd -j >results.json
 ```
 
 The following example identifies Type 2 (near) clones
 in the Linux kernel v6.3 files located in the `kernel` directory,
 by retrieving the list of files and their contents from a bare Git
 repository.
-The _okenizer_'s
+The _tokenizer_'s
 `-c` option is used to output the same token value for all identifiers.
 Adjust clone size to 40 tokens and generate verbose output while processing.
+The results are saved in textual format.
 
 ```sh
 # Obtain list of files in the bare repository
@@ -107,7 +108,7 @@ while read file; do
 done |
 
 # Identify clones
-mpcd -v -n 40
+mpcd -v -n 40 >results.txt
 ```
 
 ## Reference manual

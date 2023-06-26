@@ -48,7 +48,7 @@ Produce verbose output on the standard error with processing details.
 .SH EXAMPLES
 .PP
 Identify Type 1 (exact) clones in all Java files
-located in the \fCsrc\fP directory.
+located in the \fCsrc\fP directory and output them in JSON format.
 The \fItokenizer\fP's
 \fC-f\fP option is used to identify each output file and
 the \fC-g\fP option to process all identifiers in the same (global) scope.
@@ -63,7 +63,7 @@ find src -type f -name '*.java' |
 tokenizer -l Java -o line -i - -g -f |
 
 # Identify clones
-mpcd >results.txt
+mpcd -j >results.json
 .ft P
 .fi
 
@@ -74,6 +74,7 @@ which is stored in a bare Git repository named \fClinux.git\fP.
 The \fItokenizer\fP's
 \fC-c\fP option is used to output the same token value for all identifiers.
 Adjust clone size to 40 tokens and generate verbose output while processing.
+The results are saved in textual format.
 
 .ft C
 .nf
