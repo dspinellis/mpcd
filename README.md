@@ -9,7 +9,7 @@ implement a code clone detector.
 The rationale for building it was to address shortcomings of existing systems
 in the areas of flexibility and performance.
 
-On the flexibility, front _mpcd_ splits the functionality often found
+On the flexibility front, _mpcd_ splits the functionality often found
 in other systems into three parts: locating the files to examine,
 extracting elements that can be recognized as clones (tokenization), and
 identifying clones.
@@ -65,7 +65,7 @@ These can be obtained by applying the
 ### Example
 
 The following example identifies Type 1 (exact) clones in all Java files
-located in the `src` directory.
+located in the `src` directory and outputs them in JSON format.
 The _tokenizer_'s
 `-f` option is used to identify each output file and
 the `-g` option to process all identifiers in the same (global) scope.
@@ -78,7 +78,7 @@ find src -type f -name '*.java' |
 tokenizer -l Java -o line -i - -g -f |
 
 # Identify clones
-mpcd >results.txt
+mpcd -j >results.txt
 ```
 
 The following example identifies Type 2 (near) clones
@@ -107,7 +107,7 @@ while read file; do
 done |
 
 # Identify clones
-mpcd -n 40
+mpcd -v -n 40
 ```
 
 ## Reference manual
