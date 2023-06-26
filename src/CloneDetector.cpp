@@ -98,8 +98,6 @@ CloneDetector::report_json() const {
     // For each clone group
     for (auto cg_it = clones.begin(); cg_it != clones.end(); ++cg_it) {
         std::cout << "  {" << std::endl;
-        std::cout << "    \"number_of_clones\": "
-            << cg_it->size() << ',' << std::endl;
         std::cout << "    \"tokens\": "
             << cg_it->front().size() << ',' << std::endl;
         std::cout << "    \"pairs\": [" << std::endl;
