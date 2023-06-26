@@ -43,21 +43,32 @@ Produce verbose output on the standard error with processing details.
 
 .SH EXAMPLES
 .PP
-Identify clones in all Java files located in the \fCsrc\fP directory.
+Identify Type 1 (exact) clones in all Java files
+located in the \fCsrc\fP directory.
+The \fItokenizer\fP's
+\fC-f\fP option is used to identify each output file and
+the \fC-g\fP option to process all identifiers in the same (global) scope.
+
 
 .ft C
 .nf
-find src -type f -name '*.java' -print0 |
-while IFS= read -r -d '' file; do
-  echo "F$file"
-  tokenizer -l Java -o line -t N "$file"
-done |
+# Obtain list of Java files in the src directory
+find src -type f -name '*.java' |
+
+# Tokenize files in paths coming from stdin, using the same scope for all ids
+tokenizer -l Java -o line -l - -g -f |
+
+# Identify clones
 mpcd >results.txt
 .ft P
 .fi
 
-Find clones in the \fCkernel\fP directory of the Linux kernel v6.3,
+.PP
+Find Type 2 (near) clones in the \fCkernel\fP directory
+of the Linux kernel v6.3,
 which is stored in a bare Git repository named \fClinux.git\fP.
+The \fItokenizer\fP's
+\fC-c\fP option is used to output the same token value for all identifiers.
 Adjust clone size to 40 tokens and generate verbose output while processing.
 
 .ft C
@@ -67,7 +78,7 @@ grep '\.[ch]$' |
 while read file; do
   echo "F$file"
   git --git-dir linux.git show "v6.3:$file" |
-  tokenizer -l C -o line -t N
+  tokenizer -l C -o line -c
 done |
 mpcd -v -n 40 >results.txt
 .ft P
