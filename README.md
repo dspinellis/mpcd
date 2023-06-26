@@ -1,3 +1,5 @@
+![Build Status](https://img.shields.io/github/actions/workflow/status/dspinellis/mpld/main.yml?branch=main)
+
 # mpcd: modular performant clone detector
 
 Read from the standard input tokenized files and output sets of clones.
