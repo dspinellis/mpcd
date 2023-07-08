@@ -86,19 +86,21 @@ main(int argc, char * const argv[])
         std::cerr << "Identified " << cd.get_number_of_clones()
             << " clones in " << cd.get_number_of_clone_groups() << " groups."
             << std::endl;
-        std::cerr << "Each clone element is on average "
-            << cd.get_number_of_clone_tokens() / cd.get_number_of_clone_groups()
-            << " tokens long."
-            << std::endl;
+        if (cd.get_number_of_clone_groups() > 0)
+            std::cerr << "Each clone element is on average "
+                << cd.get_number_of_clone_tokens() / cd.get_number_of_clone_groups()
+                << " tokens long."
+                << std::endl;
     }
 
     cd.extend_clones();
     if (verbose) {
         std::cerr << "Extended clones to their maximal size." << std::endl;
-        std::cerr << "Each clone element is on average "
-            << cd.get_number_of_clone_tokens() / cd.get_number_of_clone_groups()
-            << " tokens long."
-            << std::endl;
+        if (cd.get_number_of_clone_groups() > 0)
+            std::cerr << "Each clone element is on average "
+                << cd.get_number_of_clone_tokens() / cd.get_number_of_clone_groups()
+                << " tokens long."
+                << std::endl;
     }
 
     cd.remove_shadowed_groups();

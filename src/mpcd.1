@@ -90,6 +90,27 @@ mpcd -v -n 40 >results.txt
 .ft P
 .fi
 
+.PP
+Identify Type 1 (exact) clones in all JavaScript files
+located in the current directory, excluding those in the \fCnode_modules\fP
+directory.
+Output the results in JSON format.
+
+
+.ft C
+.nf
+# Obtain list of required JavaScript files
+find . -path './node_modules' -prune -o -type f -name '*.js' |
+
+# Tokenize files in paths coming from stdin, using the same scope for all ids
+tokenizer -l JavaScript -o line -i - -g -f |
+
+# Identify clones
+mpcd -j >results.json
+.ft P
+.fi
+
+
 .SH DIAGNOSTICS
 None.
 
