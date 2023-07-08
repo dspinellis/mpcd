@@ -28,7 +28,7 @@
 #include "TokenContainer.h"
 #include "CloneDetector.h"
 
-const char version[] = "1.1.2";
+const char version[] = "1.1.3";
 
 // Identify clones among the tokenized input stream
 int
