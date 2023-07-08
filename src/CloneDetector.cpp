@@ -64,7 +64,7 @@ CloneDetector::report_text() const {
         std::cout << clone_group.front().size() << std::endl;
         for (const auto& member : clone_group) {
             std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_begin_token_offset()) + 1 << '\t';
-            std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_end_token_offset()) + 1 << '\t';
+            std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_end_token_offset() - 1) + 1 << '\t';
             std::cout << token_container.get_file_name(member.get_file_id()) << std::endl;
         }
         std::cout << std::endl;
