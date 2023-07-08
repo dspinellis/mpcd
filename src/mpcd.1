@@ -2,7 +2,7 @@
 .SH NAME
 \fBmpcd\fR \(en report code clones
 .SH SYNOPSIS
-\fBmpcd\fR [\fB\-jv\fR] [\fB\-n \fIclone-length\fR]
+\fBmpcd\fR [\fB\-jVv\fR] [\fB\-n \fIclone-length\fR]
 .SH DESCRIPTION
 The \fBmpcd\fR utility reads from its standard input a stream
 of file identifiers (e.g. file paths) prefixed with F,
@@ -39,6 +39,10 @@ Produce JSON rather than plain text output.
 .BI "-n " clone-length
 Specify the minimum length of clones that will be detected.
 The default value is 15.
+
+.TP
+.BI "-V "
+Display the program's version number and exit.
 
 .TP
 .BI "-v "

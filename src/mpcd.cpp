@@ -28,6 +28,8 @@
 #include "TokenContainer.h"
 #include "CloneDetector.h"
 
+const char version[] = "1.1.2";
+
 // Identify clones among the tokenized input stream
 int
 main(int argc, char * const argv[])
@@ -37,7 +39,7 @@ main(int argc, char * const argv[])
     bool verbose = false;
     bool json = false;
 
-    while ((opt = getopt(argc, argv, "jn:v")) != -1)
+    while ((opt = getopt(argc, argv, "jn:Vv")) != -1)
         switch (opt) {
         case 'j':
             json = true;
@@ -49,12 +51,15 @@ main(int argc, char * const argv[])
                 exit(EXIT_FAILURE);
             }
             break;
+        case 'V':
+            std::cout << "mpcd " << version << std::endl;
+            exit(EXIT_SUCCESS);
         case 'v':
             verbose = true;
             break;
         default: /* ? */
             std::cerr << "Usage: " << argv[0] <<
-                " [-jv] [-n tokens]" << std::endl;
+                " [-jvV] [-n tokens]" << std::endl;
             exit(EXIT_FAILURE);
         }
 
