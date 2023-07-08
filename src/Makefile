@@ -45,5 +45,12 @@ install: all
 clean:
 	rm -f *.o *.d *.exe mpcd UnitTests Token.h Keyword.h
 
+# Tag HEAD with the used version string
+release:
+	git tag v$$(sed -n 's/const char version\[] = "\(.*\)";/\1/p' mpcd.cpp)
+	git push --tags
+
 # Pull-in dependencies generated with -MD
 -include $(OBJS:.o=.d)
+
+release:
