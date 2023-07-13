@@ -40,18 +40,18 @@ CloneDetector::CloneDetector(const TokenContainer &tc, unsigned clone_length)
                 continue;
 
             // Create an identifier for the token sequence to add
-            SeenTokens seen(file.get_id(), file.line_offset(line));
+            SeenTokens clone_candidates(file.get_id(), file.line_offset(line));
 
-            insert(seen, CloneLocation(file.get_id(), file.line_offset(line)));
+            insert(clone_candidates, CloneLocation(file.get_id(), file.line_offset(line)));
         }
 }
 
 // Prune-away recorded tokens not associated with clones
 void
 CloneDetector::prune_non_clones() {
-    for (auto it = seen.begin(); it != seen.end();)
+    for (auto it = clone_candidates.begin(); it != clone_candidates.end();)
         if (it->second.size() == 1)
-            it = seen.erase(it);
+            it = clone_candidates.erase(it);
         else
             ++it;
 }
@@ -150,11 +150,11 @@ operator<(const SeenTokens& lhs, const SeenTokens& rhs) {
             rhs_it, rhs_it + clone_length);
 }
 
-// Create partial candidate clones in "seen" into full clones in "clone"
+// Create partial candidate clones in "clone_candidates" into full clones in "clone"
 void
 CloneDetector::create_line_region_clones()
 {
-    for (const auto& it : seen) {
+    for (const auto& it : clone_candidates) {
         auto leader = it.first;
 
         // Extent of clone leader data to line end

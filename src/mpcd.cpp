@@ -65,15 +65,15 @@ main(int argc, char * const argv[])
 
     if (verbose)
         std::cerr << "Reading input tokens." << std::endl;
-    TokenContainer tc(std::cin);
+    TokenContainer token_container(std::cin);
     if (verbose)
         std::cerr << "Read "
-            << tc.file_size() << " files, "
-            << tc.line_size() << " lines, "
-            << tc.token_size() << " tokens."
+            << token_container.file_size() << " files, "
+            << token_container.line_size() << " lines, "
+            << token_container.token_size() << " tokens."
             << std::endl;
 
-    CloneDetector cd(tc, clone_tokens);
+    CloneDetector cd(token_container, clone_tokens);
     if (verbose)
         std::cerr << "Identified "
             << cd.get_number_of_seen_clones() << " potential clones in "

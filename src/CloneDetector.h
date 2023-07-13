@@ -168,7 +168,7 @@ private:
     const TokenContainer &token_container;
 
     // Tokens that have been encountered in the examined code (token_container)
-    std::map<SeenTokens, seen_locations_type> seen;
+    std::map<SeenTokens, seen_locations_type> clone_candidates;
 
     // Minimum length of clones to be detected
     unsigned clone_length;
@@ -178,9 +178,9 @@ private:
 
     // Add a new token sequence that has been encountered
     void insert(const SeenTokens &tokens, const CloneLocation location) {
-        auto it = seen.find(tokens);
-        if (it == seen.end())
-            seen.insert(it, std::make_pair(tokens, seen_locations_type{location}));
+        auto it = clone_candidates.find(tokens);
+        if (it == clone_candidates.end())
+            clone_candidates.insert(it, std::make_pair(tokens, seen_locations_type{location}));
         else
             it->second.push_back(location);
     }
@@ -208,7 +208,7 @@ public:
     // Prune-away recorded tokens not associated with clones
     void prune_non_clones();
 
-    // Convert candidate clones from "seen" into "clone"
+    // Convert candidate clones from "clone_candidates" into "clone"
     void create_line_region_clones();
 
     // Extend clones to subsequent lines if possible
@@ -227,12 +227,12 @@ public:
     void report_json() const;
 
     // Return the number of sites for potential clones (for testing)
-    int get_number_of_seen_sites() { return seen.size(); }
+    int get_number_of_seen_sites() { return clone_candidates.size(); }
 
     // Return the number of potential clones found (for testing)
     int get_number_of_seen_clones() {
         int nclones = 0;
-        for (const auto& it : seen) {
+        for (const auto& it : clone_candidates) {
             size_t nelem = it.second.size();
             if (nelem > 1)
                 nclones += nelem;
