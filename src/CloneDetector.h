@@ -214,6 +214,9 @@ public:
     // Extend clones to subsequent lines if possible
     void extend_clones();
 
+    // Clear the clone_candidates data structure
+    void clear_clone_candidates() { clone_candidates.clear(); }
+
     // Remove clone groups whose members are entirely shadowed by others
     void remove_shadowed_groups();
 

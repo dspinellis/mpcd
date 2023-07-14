@@ -104,6 +104,7 @@ main(int argc, char * const argv[])
             << std::endl;
 
     cd.create_line_region_clones();
+    cd.clear_clone_candidates();
     if (verbose) {
         std::cerr << "Identified " << cd.get_number_of_clones()
             << " clones in " << cd.get_number_of_clone_groups() << " groups."
