@@ -34,7 +34,7 @@ typedef FileDataCollection::size_type file_id_type;
 // Data stored about each file
 class FileData {
 public:
-    typedef short token_type;
+    typedef unsigned int token_type;
     typedef std::vector<token_type> tokens_type;
 
 private:

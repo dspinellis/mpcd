@@ -133,9 +133,9 @@ public:
         TokenContainer tc(iss);
 
         for (const auto& file : tc.file_view()) {
-            CPPUNIT_ASSERT_EQUAL((short)42, *file.offset_begin(1));
+            CPPUNIT_ASSERT_EQUAL((FileData::token_type)42, *file.offset_begin(1));
         }
-        CPPUNIT_ASSERT_EQUAL((short)7, *tc.offset_begin(0, 2));
+        CPPUNIT_ASSERT_EQUAL((FileData::token_type)7, *tc.offset_begin(0, 2));
     }
 
     void test_line_end() {
@@ -161,9 +161,9 @@ public:
         TokenContainer tc(iss);
 
         for (const auto& file : tc.file_view()) {
-            CPPUNIT_ASSERT_EQUAL((short)42, file.get_token(1));
+            CPPUNIT_ASSERT_EQUAL((FileData::token_type)42, file.get_token(1));
         }
-        CPPUNIT_ASSERT_EQUAL((short)7, tc.get_token(0, 2));
+        CPPUNIT_ASSERT_EQUAL((FileData::token_type)7, tc.get_token(0, 2));
     }
 
     void test_get_preceding_eol_offset() {

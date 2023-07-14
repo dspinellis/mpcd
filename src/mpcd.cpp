@@ -28,7 +28,21 @@
 #include "TokenContainer.h"
 #include "CloneDetector.h"
 
-const char version[] = "1.1.3";
+const char version[] = "1.1.4";
+
+static void
+size_report()
+{
+    // Three pointers per Red-Black tree node plus color overhead
+    std::cout << "Bytes per token: " << sizeof(FileData::token_type) << std::endl;
+    std::cout << "Bytes per unique line: " << sizeof(SeenTokens) + sizeof(CloneLocation) + 3 * sizeof(void *) + sizeof(int) << std::endl;
+
+    std::cout << "Bytes per duplicate line: " << sizeof(SeenTokens) << std::endl;
+    std::cout << "Bytes per file: " << sizeof(FileData) << std::endl;
+
+    std::cout << "Bytes per clone group: " << 2 * sizeof(void *) << std::endl;
+    std::cout << "Bytes per clone: " << 2 * sizeof(void *) + sizeof(Clone) << std::endl;
+}
 
 // Identify clones among the tokenized input stream
 int
@@ -39,7 +53,7 @@ main(int argc, char * const argv[])
     bool verbose = false;
     bool json = false;
 
-    while ((opt = getopt(argc, argv, "jn:Vv")) != -1)
+    while ((opt = getopt(argc, argv, "jn:SVv")) != -1)
         switch (opt) {
         case 'j':
             json = true;
@@ -51,6 +65,9 @@ main(int argc, char * const argv[])
                 exit(EXIT_FAILURE);
             }
             break;
+        case 'S':
+            size_report();
+            exit(EXIT_SUCCESS);
         case 'V':
             std::cout << "mpcd " << version << std::endl;
             exit(EXIT_SUCCESS);
@@ -59,7 +76,7 @@ main(int argc, char * const argv[])
             break;
         default: /* ? */
             std::cerr << "Usage: " << argv[0] <<
-                " [-jvV] [-n tokens]" << std::endl;
+                " [-jSvV] [-n tokens]" << std::endl;
             exit(EXIT_FAILURE);
         }
 
