@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# Adaptation script to allow mpcd and tokenizer to be run from BigCloneEval
+# https://github.com/jeffsvajlenko/BigCloneEval
+#
+
+# Find Java source code files
+find "$1" -type -f -name \*.java -print |
+
+tokenizer -l Java -o line -c |
+# Tokenize Java (-l Java) files in paths coming from stdin (-i -),
+# output the same token value for all identifiers (-c),
+# identify read files (-f).
+tokenizer -l Java -o line -i - -c -f |
+
+# Use the recommended 50 token similary metric
+mpcd -n 50 |
+
+# Convert groups to required pairs format
+# Input:
+# 2       22
+# 2731    2741    /vol/nbk/linux/kernel/bpf/core.c
+# 2736    2748    /vol/nbk/linux/kernel/bpf/core.c
+# Output:
+# cf1_subdirectory,cf1_filename,cf1_startline,cf1_endline,cf2_subdirectory,cf2_filename,cf2_endline
+awk '
+BEGIN { OFS = "," }
+
+NF == 3 {
+  file = $3
+  sub(".*/", "", file)
+  dir = $3
+  sub("/[^/]*$", "", dir)
+}
+
+p1_start && NF == 3 {
+  print p1_dir, p1_file, p1_start, p1_end, dir, file, $1, $2
+}
+
+NF == 3 {
+  p1_dir = dir
+  p1_file = file
+  p1_start = $1
+  p1_end = $2
+}
+
+/^$/ { p1_start = 0 }
+'
