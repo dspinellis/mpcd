@@ -5,9 +5,8 @@
 #
 
 # Find Java source code files
-find "$1" -type -f -name \*.java -print |
+find "$1" -type f -name \*.java -print |
 
-tokenizer -l Java -o line -c |
 # Tokenize Java (-l Java) files in paths coming from stdin (-i -),
 # output the same token value for all identifiers (-c),
 # identify read files (-f).
@@ -31,6 +30,7 @@ NF == 3 {
   sub(".*/", "", file)
   dir = $3
   sub("/[^/]*$", "", dir)
+  sub(".*/", "", dir)
 }
 
 p1_start && NF == 3 {
