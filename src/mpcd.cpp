@@ -52,9 +52,13 @@ main(int argc, char * const argv[])
     int clone_tokens = 15; // Minimum number of same tokens to identify a clone
     bool verbose = false;
     bool json = false;
+    bool block_regions = false;
 
-    while ((opt = getopt(argc, argv, "jn:SVv")) != -1)
+    while ((opt = getopt(argc, argv, "bjn:SVv")) != -1)
         switch (opt) {
+        case 'b':
+            block_regions = true;
+            break;
         case 'j':
             json = true;
             break;
@@ -76,7 +80,7 @@ main(int argc, char * const argv[])
             break;
         default: /* ? */
             std::cerr << "Usage: " << argv[0] <<
-                " [-jSvV] [-n tokens]" << std::endl;
+                " [-bjSVv] [-n tokens]" << std::endl;
             exit(EXIT_FAILURE);
         }
 
@@ -103,7 +107,11 @@ main(int argc, char * const argv[])
             << cd.get_number_of_seen_sites() << " sites."
             << std::endl;
 
-    cd.create_line_region_clones();
+    if (block_regions)
+        cd.create_block_region_clones();
+    else
+        cd.create_line_region_clones();
+
     cd.clear_clone_candidates();
     if (verbose) {
         std::cerr << "Identified " << cd.get_number_of_clones()
@@ -116,14 +124,17 @@ main(int argc, char * const argv[])
                 << std::endl;
     }
 
-    cd.extend_clones();
-    if (verbose) {
-        std::cerr << "Extended clones to their maximal size." << std::endl;
-        if (cd.get_number_of_clone_groups() > 0)
-            std::cerr << "Each clone element is on average "
-                << cd.get_number_of_clone_tokens() / cd.get_number_of_clone_groups()
-                << " tokens long."
-                << std::endl;
+    if (!block_regions) {
+        // Extend line regions as far as possible
+        cd.extend_clones();
+        if (verbose) {
+            std::cerr << "Extended clones to their maximal size." << std::endl;
+            if (cd.get_number_of_clone_groups() > 0)
+                std::cerr << "Each clone element is on average "
+                    << cd.get_number_of_clone_tokens() / cd.get_number_of_clone_groups()
+                    << " tokens long."
+                    << std::endl;
+        }
     }
 
     cd.remove_shadowed_groups();

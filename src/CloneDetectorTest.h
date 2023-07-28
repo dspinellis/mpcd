@@ -12,6 +12,9 @@ class CloneDetectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_insert);
     CPPUNIT_TEST(test_prune_non_clones);
     CPPUNIT_TEST(test_create_line_region_clones);
+    CPPUNIT_TEST(test_create_block_region_clones_simple);
+    CPPUNIT_TEST(test_create_block_region_clones_no_open);
+    CPPUNIT_TEST(test_create_block_region_clones_nested_open);
     CPPUNIT_TEST(test_create_line_extended_region_clones);
     CPPUNIT_TEST(test_extend_clones_same);
     CPPUNIT_TEST(test_extend_clones_different);
@@ -78,6 +81,45 @@ public:
         CloneDetector cd(tc, 2);
         cd.prune_non_clones();
         cd.create_line_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+    }
+
+    // Note '{' == 123 and '}' == 125
+    void test_create_block_region_clones_simple() {
+        std::istringstream iss(
+// Line:        1              2  3
+// Offset:      0  1   2  3    4  5  6   7  8
+        "Fname\n12 123 42 125\n9\n12 123 42 125\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+    }
+
+    void test_create_block_region_clones_no_open() {
+        std::istringstream iss(
+// Line:        1            2 3  4            5  6               7            8
+// Offset:      0  1   2  3    4  5  6   7  8  9  10 11  12  13  14 15  16 17
+        "Fname\n12 123 42 4\n\n7\n12 123 42 9\n7\n15 123 10 125\n15 123 10 25\n15 123 10 125\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
+        // cd.report_text();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+    }
+
+    void test_create_block_region_clones_nested_open() {
+        std::istringstream iss(
+        "Fname\n12 123 42 4\n\n7\n12 123 42 9\n7\n15 123 10 123 12 125 33\n 125\n15 123 10 25\n15 123 10 123 12 125 33\n 125\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
         CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
         CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
     }

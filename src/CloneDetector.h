@@ -210,6 +210,7 @@ public:
 
     // Convert candidate clones from "clone_candidates" into "clone"
     void create_line_region_clones();
+    void create_block_region_clones();
 
     // Extend clones to subsequent lines if possible
     void extend_clones();

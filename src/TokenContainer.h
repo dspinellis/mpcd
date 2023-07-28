@@ -226,6 +226,11 @@ public:
         return file_data[id].get_name();
     }
 
+    // Return a file's end iterator
+    FileData::tokens_type::const_iterator file_end(file_id_type id) const {
+        return file_data[id].file_end();
+    }
+
     // Return a token's line
     FileData::line_number_type get_token_line_number(file_id_type id, FileData::token_offset_type o) const {
         return file_data[id].get_token_line_number(o);

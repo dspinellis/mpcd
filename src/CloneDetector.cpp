@@ -63,9 +63,10 @@ CloneDetector::report_text() const {
         std::cout << clone_group.size() << "\t";
         std::cout << clone_group.front().size() << std::endl;
         for (const auto& member : clone_group) {
-            std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_begin_token_offset()) + 1 << '\t';
-            std::cout << token_container.get_token_line_number(member.get_file_id(), member.get_end_token_offset() - 1) + 1 << '\t';
-            std::cout << token_container.get_file_name(member.get_file_id()) << std::endl;
+            auto member_file_id = member.get_file_id();
+            std::cout << token_container.get_token_line_number(member_file_id, member.get_begin_token_offset()) + 1 << '\t';
+            std::cout << token_container.get_token_line_number(member_file_id, member.get_end_token_offset() - 1) + 1 << '\t';
+            std::cout << token_container.get_file_name(member_file_id) << std::endl;
         }
         std::cout << std::endl;
     }
@@ -150,7 +151,10 @@ operator<(const SeenTokens& lhs, const SeenTokens& rhs) {
             rhs_it, rhs_it + clone_length);
 }
 
-// Create partial candidate clones in "clone_candidates" into full clones in "clone"
+/*
+ * Convert partial candidate clones in "clone_candidates" into full clones
+ * in "clone", based on clone lines.
+ */
 void
 CloneDetector::create_line_region_clones()
 {
@@ -158,15 +162,17 @@ CloneDetector::create_line_region_clones()
         auto leader = it.first;
 
         // Extent of clone leader data to line end
-        auto leader_extension_begin = token_container.offset_begin(leader.get_file_id(), leader.get_begin_token_offset() + clone_length);
-        auto leader_line_end = token_container.line_from_offset_end(leader.get_file_id(), leader.get_begin_token_offset() + clone_length - 1);
+        auto leader_file_id = leader.get_file_id();
+        auto leader_extension_begin = token_container.offset_begin(leader_file_id, leader.get_begin_token_offset() + clone_length);
+        auto leader_line_end = token_container.line_from_offset_end(leader_file_id, leader.get_begin_token_offset() + clone_length - 1);
         auto leader_extension_length = leader_line_end - leader_extension_begin;
         // Create a group of clones that are the same till the end of the line
         std::list<Clone> group;
         for (const auto& member : it.second) {
-            auto member_extension_begin = token_container.offset_begin(member.get_file_id(), member.get_begin_token_offset() + clone_length);
+            auto member_file_id = member.get_file_id();
+            auto member_extension_begin = token_container.offset_begin(member_file_id, member.get_begin_token_offset() + clone_length);
             auto offset_in_last_line = member.get_begin_token_offset() + clone_length - 1;
-            auto member_line_end = token_container.line_from_offset_end(member.get_file_id(), offset_in_last_line);
+            auto member_line_end = token_container.line_from_offset_end(member_file_id, offset_in_last_line);
 
             // Unequal line length extensions
             if (member_line_end - member_extension_begin != leader_extension_length)
@@ -175,7 +181,88 @@ CloneDetector::create_line_region_clones()
             if (!std::equal(leader_extension_begin, leader_line_end, member_extension_begin))
                 continue;
             auto member_end_offset = member.get_begin_token_offset() + clone_length + leader_extension_length;
-            group.emplace_back(Clone(member.get_file_id(),
+            group.emplace_back(Clone(member_file_id,
+                        member.get_begin_token_offset(), member_end_offset));
+        }
+        if (group.size() > 1)
+            clones.push_back(std::move(group));
+    }
+}
+
+/*
+ * Convert partial candidate clones in "clone_candidates" into full clones
+ * in "clone", based on clone blocks.
+ */
+void
+CloneDetector::create_block_region_clones()
+{
+    for (const auto& it : clone_candidates) {
+        auto leader = it.first;
+
+        auto leader_file_id = leader.get_file_id();
+        auto leader_begin = token_container.offset_begin(leader_file_id, leader.get_begin_token_offset());
+        auto leader_end = leader_begin + clone_length;
+        // Find block begin within the clone region
+        auto leader_block_begin = leader_begin;
+        for (; leader_block_begin < leader_end; ++leader_block_begin)
+            if (*leader_block_begin == '{')
+                break;
+        if (leader_block_begin == leader_end)
+            continue;  // This candidate does not contain a code block; skip it
+
+        // Find matching end
+        int block_depth = 0;
+        auto leader_block_end = leader_block_begin;
+        auto leader_file_end = token_container.file_end(leader_file_id);
+        for (; leader_block_end < leader_file_end; ++leader_block_end) {
+            switch (*leader_block_end) {
+            case '{': ++block_depth; break;
+            case '}': --block_depth; break;
+            }
+            if (block_depth == 0)
+                break;
+        }
+
+        if (leader_block_end == leader_file_end)
+            continue;  // No block end found
+
+        ++leader_block_end;  // Point past } to include it
+        auto block_begin_offset = leader_block_begin - leader_begin;
+        auto block_end_offset = leader_block_end - leader_begin;
+
+        /*
+         * If the block is within the original detected clone span, just add
+         * all its members as clones.
+         */
+        if (leader_block_end < leader_end) {
+            std::list<Clone> group;
+            for (const auto& member : it.second) {
+                auto member_begin = member.get_begin_token_offset();
+                auto member_file_id = member.get_file_id();
+
+                group.emplace_back(Clone(member_file_id,
+                            member_begin + block_begin_offset,
+                            member_begin + block_end_offset));
+            }
+            clones.push_back(std::move(group));
+            continue;
+        }
+
+        // Create a group of clones that are the same till the end of the block
+        std::list<Clone> group;
+        auto block_extension_length = leader_block_end - leader_end;
+        auto leader_extension_begin = leader_begin + clone_length;
+        for (const auto& member : it.second) {
+            auto member_file_id = member.get_file_id();
+            auto member_extension_begin = token_container.offset_begin(member_file_id, member.get_begin_token_offset() + clone_length);
+            // Block past member's end
+            if (member_extension_begin + block_extension_length > token_container.file_end(member_file_id))
+                continue;
+            // Unequal extension contents
+            if (!std::equal(leader_extension_begin, leader_block_end, member_extension_begin))
+                continue;
+            auto member_end_offset = member.get_begin_token_offset() + clone_length + block_extension_length;
+            group.emplace_back(Clone(member_file_id,
                         member.get_begin_token_offset(), member_end_offset));
         }
         if (group.size() > 1)

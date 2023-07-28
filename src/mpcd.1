@@ -2,7 +2,7 @@
 .SH NAME
 \fBmpcd\fR \(en report code clones
 .SH SYNOPSIS
-\fBmpcd\fR [\fB\-jSVv\fR] [\fB\-n \fIclone-length\fR]
+\fBmpcd\fR [\fB\-bjSVv\fR] [\fB\-n \fIclone-length\fR]
 .SH DESCRIPTION
 The \fBmpcd\fR utility reads from its standard input a stream
 of file identifiers (e.g. file paths) prefixed with F,
@@ -32,7 +32,12 @@ through the following command-line option.
 .RS 3
 
 .TP
-.BI "-j "
+.B -b
+Identify clone block regions (delimited with \fC{\fP and \fC}\fP),
+rather than clone line regions.
+
+.TP
+.B -j
 Produce JSON rather than plain text output.
 
 .TP
@@ -45,11 +50,11 @@ The default value is 15.
 Display the program's memory requirements and exit.
 
 .TP
-.BI "-V "
+.B -V
 Display the program's version number and exit.
 
 .TP
-.BI "-v "
+.B -v
 Produce verbose output on the standard error with processing details.
 
 .RE
