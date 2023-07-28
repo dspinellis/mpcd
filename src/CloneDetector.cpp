@@ -163,7 +163,6 @@ CloneDetector::create_line_region_clones()
         auto leader_extension_length = leader_line_end - leader_extension_begin;
         // Create a group of clones that are the same till the end of the line
         std::list<Clone> group;
-        int group_size = 0;
         for (const auto& member : it.second) {
             auto member_extension_begin = token_container.offset_begin(member.get_file_id(), member.get_begin_token_offset() + clone_length);
             auto offset_in_last_line = member.get_begin_token_offset() + clone_length - 1;
@@ -178,9 +177,8 @@ CloneDetector::create_line_region_clones()
             auto member_end_offset = member.get_begin_token_offset() + clone_length + leader_extension_length;
             group.emplace_back(Clone(member.get_file_id(),
                         member.get_begin_token_offset(), member_end_offset));
-            ++group_size;
         }
-        if (group_size > 1)
+        if (group.size() > 1)
             clones.push_back(std::move(group));
     }
 }
