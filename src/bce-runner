@@ -12,8 +12,8 @@ find "$1" -type f -name \*.java -print |
 # identify read files (-f).
 tokenizer -l Java -o line -i - -c -f |
 
-# Use the recommended 50 token similary metric
-mpcd -n 50 |
+# Use the recommended 50 token similary metric and report block regions
+mpcd -n 50 -b |
 
 # Convert groups to required pairs format
 # Input:
