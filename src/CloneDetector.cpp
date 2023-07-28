@@ -227,6 +227,10 @@ CloneDetector::create_block_region_clones()
             continue;  // No block end found
 
         ++leader_block_end;  // Point past } to include it
+
+        if (leader_block_end - leader_block_begin < clone_length)
+            continue;  // Block smaller than the specified cline length
+
         auto block_begin_offset = leader_block_begin - leader_begin;
         auto block_end_offset = leader_block_end - leader_begin;
 
