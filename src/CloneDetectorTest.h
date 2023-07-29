@@ -13,6 +13,9 @@ class CloneDetectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_prune_non_clones);
     CPPUNIT_TEST(test_create_line_region_clones);
     CPPUNIT_TEST(test_create_block_region_clones_simple);
+    CPPUNIT_TEST(test_create_block_region_clones_offset_success);
+    CPPUNIT_TEST(test_create_block_region_clones_offset_failure);
+    CPPUNIT_TEST(test_create_block_region_clones_offset_internal_success);
     CPPUNIT_TEST(test_create_block_region_clones_no_open);
     CPPUNIT_TEST(test_create_block_region_clones_nested_open);
     CPPUNIT_TEST(test_create_line_extended_region_clones);
@@ -91,6 +94,41 @@ public:
 // Line:        1              2  3
 // Offset:      0  1   2  3    4  5  6   7  8
         "Fname\n12 123 42 125\n9\n12 123 42 125\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+    }
+
+    void test_create_block_region_clones_offset_success() {
+        std::istringstream iss(
+        //      No match Clone         No match Clone
+        "Fname\n22 123 \n42 7\n125\n9\n12 123 \n42 7\n125\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+    }
+
+    void test_create_block_region_clones_offset_failure() {
+        std::istringstream iss(
+        //      No match Clone         No match Clone
+        "Fname\n22 123 \n42 7\n125\n9\n12 123 \n42 7\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
+        CPPUNIT_ASSERT_EQUAL(0, cd.get_number_of_clone_groups());
+    }
+
+    void test_create_block_region_clones_offset_internal_success() {
+        std::istringstream iss(
+        //      No match Clone                No match Clone
+        "Fname\n22 123 \n123 42 7 125\n125\n9\n12 123 \n123 42 7 125\n");
         TokenContainer tc(iss);
         CloneDetector cd(tc, 2);
         cd.prune_non_clones();

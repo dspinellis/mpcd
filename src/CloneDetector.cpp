@@ -190,88 +190,127 @@ CloneDetector::create_line_region_clones()
 }
 
 /*
+ * Convert partial candidate clones associated with a leader and
+ * its members into full clones in "clone", based on clone blocks.
+ * Attempt to start the clone "offset" tokens back from the recorded
+ * start to cater for clone blocks starting on an (otherwise differing)
+ * previous line.
+ * Return true on success false on failure to add a clone
+ */
+bool
+CloneDetector::create_block_region_clone(const SeenTokens& leader,
+        const seen_locations_type& members, int offset)
+{
+    auto leader_begin_token_offset = leader.get_begin_token_offset();
+    if (leader_begin_token_offset + offset < 0)
+        return false;  // Can't deal with this offset
+
+    auto leader_file_id = leader.get_file_id();
+    auto leader_begin = token_container.offset_begin(leader_file_id, leader_begin_token_offset);
+    auto leader_end = leader_begin + clone_length;
+    // Find block begin within the clone region
+    auto leader_block_begin = leader_begin + offset;
+    for (; leader_block_begin < leader_end; ++leader_block_begin)
+        if (*leader_block_begin == '{')
+            break;
+    if (leader_block_begin == leader_end)
+        return false;  // This candidate does not contain a code block; skip it
+
+    // Find matching end
+    int block_depth = 0;
+    auto leader_block_end = leader_block_begin;
+    auto leader_file_end = token_container.file_end(leader_file_id);
+    for (; leader_block_end < leader_file_end; ++leader_block_end) {
+        switch (*leader_block_end) {
+        case '{': ++block_depth; break;
+        case '}': --block_depth; break;
+        }
+        if (block_depth == 0)
+            break;
+    }
+
+    if (leader_block_end == leader_file_end)
+        return false;  // No block end found
+
+    ++leader_block_end;  // Point past closing brace to include it
+
+    if (leader_block_end - leader_block_begin < clone_length)
+        return false;  // Block smaller than the specified cline length
+
+    auto block_begin_offset = leader_block_begin - leader_begin;
+    auto block_end_offset = leader_block_end - leader_begin;
+
+    /*
+     * If the block is within the original detected clone span, just add
+     * all its members as clones.
+     */
+    if (leader_block_begin >= leader_begin && leader_block_end < leader_end) {
+        std::list<Clone> group;
+        for (const auto& member : members) {
+            auto member_begin = member.get_begin_token_offset();
+            auto member_file_id = member.get_file_id();
+
+            group.emplace_back(Clone(member_file_id,
+                        member_begin + block_begin_offset,
+                        member_begin + block_end_offset));
+        }
+        clones.push_back(std::move(group));
+        return true;
+    }
+
+    // Create a group of clones that are the same till the end of the block
+    std::list<Clone> group;
+    auto block_extension_length = leader_block_end - leader_end;
+    auto leader_extension_begin = leader_begin + clone_length;
+    for (const auto& member : members) {
+        auto member_begin_token_offset = member.get_begin_token_offset();
+        auto member_file_id = member.get_file_id();
+
+        // Unequal offset contents
+        if (offset) {
+            if (member_begin_token_offset + offset < 0)
+                continue;  // Can't deal with this offset
+
+            auto member_begin = token_container.offset_begin(member_file_id, member_begin_token_offset);
+            if (!std::equal(leader_begin + offset, leader_begin, member_begin + offset))
+                continue;
+        }
+
+        auto member_extension_begin = token_container.offset_begin(member_file_id, member_begin_token_offset + clone_length);
+
+        // Block past member's end
+        if (member_extension_begin + block_extension_length > token_container.file_end(member_file_id))
+            continue;
+
+        // Unequal extension contents
+        if (!std::equal(leader_extension_begin, leader_block_end, member_extension_begin))
+            continue;
+
+        auto member_end_offset = member.get_begin_token_offset() + clone_length + block_extension_length;
+        group.emplace_back(Clone(member_file_id,
+                    member.get_begin_token_offset(), member_end_offset));
+    }
+
+    if (group.size() > 1) {
+        clones.push_back(std::move(group));
+        return true;
+    }
+    return false;
+}
+
+/*
  * Convert partial candidate clones in "clone_candidates" into full clones
  * in "clone", based on clone blocks.
  */
 void
 CloneDetector::create_block_region_clones()
 {
-    for (const auto& it : clone_candidates) {
-        auto leader = it.first;
-
-        auto leader_file_id = leader.get_file_id();
-        auto leader_begin = token_container.offset_begin(leader_file_id, leader.get_begin_token_offset());
-        auto leader_end = leader_begin + clone_length;
-        // Find block begin within the clone region
-        auto leader_block_begin = leader_begin;
-        for (; leader_block_begin < leader_end; ++leader_block_begin)
-            if (*leader_block_begin == '{')
+    for (const auto& it : clone_candidates)
+        // First try the previous token for blocks starting on an otherwise
+        // different previous line
+        for (int offset = -1; offset <= 0; ++offset)
+            if (create_block_region_clone(it.first, it.second, offset))
                 break;
-        if (leader_block_begin == leader_end)
-            continue;  // This candidate does not contain a code block; skip it
-
-        // Find matching end
-        int block_depth = 0;
-        auto leader_block_end = leader_block_begin;
-        auto leader_file_end = token_container.file_end(leader_file_id);
-        for (; leader_block_end < leader_file_end; ++leader_block_end) {
-            switch (*leader_block_end) {
-            case '{': ++block_depth; break;
-            case '}': --block_depth; break;
-            }
-            if (block_depth == 0)
-                break;
-        }
-
-        if (leader_block_end == leader_file_end)
-            continue;  // No block end found
-
-        ++leader_block_end;  // Point past } to include it
-
-        if (leader_block_end - leader_block_begin < clone_length)
-            continue;  // Block smaller than the specified cline length
-
-        auto block_begin_offset = leader_block_begin - leader_begin;
-        auto block_end_offset = leader_block_end - leader_begin;
-
-        /*
-         * If the block is within the original detected clone span, just add
-         * all its members as clones.
-         */
-        if (leader_block_end < leader_end) {
-            std::list<Clone> group;
-            for (const auto& member : it.second) {
-                auto member_begin = member.get_begin_token_offset();
-                auto member_file_id = member.get_file_id();
-
-                group.emplace_back(Clone(member_file_id,
-                            member_begin + block_begin_offset,
-                            member_begin + block_end_offset));
-            }
-            clones.push_back(std::move(group));
-            continue;
-        }
-
-        // Create a group of clones that are the same till the end of the block
-        std::list<Clone> group;
-        auto block_extension_length = leader_block_end - leader_end;
-        auto leader_extension_begin = leader_begin + clone_length;
-        for (const auto& member : it.second) {
-            auto member_file_id = member.get_file_id();
-            auto member_extension_begin = token_container.offset_begin(member_file_id, member.get_begin_token_offset() + clone_length);
-            // Block past member's end
-            if (member_extension_begin + block_extension_length > token_container.file_end(member_file_id))
-                continue;
-            // Unequal extension contents
-            if (!std::equal(leader_extension_begin, leader_block_end, member_extension_begin))
-                continue;
-            auto member_end_offset = member.get_begin_token_offset() + clone_length + block_extension_length;
-            group.emplace_back(Clone(member_file_id,
-                        member.get_begin_token_offset(), member_end_offset));
-        }
-        if (group.size() > 1)
-            clones.push_back(std::move(group));
-    }
 }
 
 // Extend clones to subsequent lines as much as possible

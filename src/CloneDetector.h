@@ -202,6 +202,9 @@ private:
                     clone.get_end_token_offset()));
     }
 
+    // Create candidate clone into "clone"
+    bool create_block_region_clone(const SeenTokens& leader,
+        const seen_locations_type& members, int offset);
 public:
     CloneDetector(const TokenContainer &tc, unsigned clone_length);
 
