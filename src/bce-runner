@@ -12,8 +12,8 @@ find "$1" -type f -name \*.java -print |
 # identify read files (-f).
 tokenizer -l Java -o line -i - -c -f |
 
-# Use the recommended 50 token similary metric and report block regions
-mpcd -n 50 -b |
+# For 10 lines assume at least 2 tokens per line average
+mpcd -n 20 -b |
 
 # Convert groups to required pairs format
 # Input:
@@ -37,7 +37,7 @@ p1_start && NF == 3 {
   print p1_dir, p1_file, p1_start, p1_end, dir, file, $1, $2
 }
 
-NF == 3 {
+!p1_start && NF == 3 {
   p1_dir = dir
   p1_file = file
   p1_start = $1
