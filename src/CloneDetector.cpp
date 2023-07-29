@@ -237,27 +237,6 @@ CloneDetector::create_block_region_clone(const SeenTokens& leader,
     if (leader_block_end - leader_block_begin < clone_length)
         return false;  // Block smaller than the specified cline length
 
-    auto block_begin_offset = leader_block_begin - leader_begin;
-    auto block_end_offset = leader_block_end - leader_begin;
-
-    /*
-     * If the block is within the original detected clone span, just add
-     * all its members as clones.
-     */
-    if (leader_block_begin >= leader_begin && leader_block_end < leader_end) {
-        std::list<Clone> group;
-        for (const auto& member : members) {
-            auto member_begin = member.get_begin_token_offset();
-            auto member_file_id = member.get_file_id();
-
-            group.emplace_back(Clone(member_file_id,
-                        member_begin + block_begin_offset,
-                        member_begin + block_end_offset));
-        }
-        clones.push_back(std::move(group));
-        return true;
-    }
-
     // Create a group of clones that are the same till the end of the block
     std::list<Clone> group;
     auto block_extension_length = leader_block_end - leader_end;
@@ -266,7 +245,7 @@ CloneDetector::create_block_region_clone(const SeenTokens& leader,
         auto member_begin_token_offset = member.get_begin_token_offset();
         auto member_file_id = member.get_file_id();
 
-        // Unequal offset contents
+        // Check for unequal contents at the offset position
         if (offset) {
             if (member_begin_token_offset + offset < 0)
                 continue;  // Can't deal with this offset
@@ -278,12 +257,13 @@ CloneDetector::create_block_region_clone(const SeenTokens& leader,
 
         auto member_extension_begin = token_container.offset_begin(member_file_id, member_begin_token_offset + clone_length);
 
-        // Block past member's end
+        // Check for block past member's end
         if (member_extension_begin + block_extension_length > token_container.file_end(member_file_id))
             continue;
 
-        // Unequal extension contents
-        if (!std::equal(leader_extension_begin, leader_block_end, member_extension_begin))
+        // Check for unequal extension contents
+        if (leader_block_end > leader_extension_begin
+            && !std::equal(leader_extension_begin, leader_block_end, member_extension_begin))
             continue;
 
         auto member_end_offset = member.get_begin_token_offset() + clone_length + block_extension_length;

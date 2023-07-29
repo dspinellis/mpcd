@@ -14,6 +14,7 @@ class CloneDetectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_create_line_region_clones);
     CPPUNIT_TEST(test_create_block_region_clones_simple);
     CPPUNIT_TEST(test_create_block_region_clones_offset_success);
+    CPPUNIT_TEST(test_create_block_region_clones_offset_internal_block_end_success);
     CPPUNIT_TEST(test_create_block_region_clones_offset_failure);
     CPPUNIT_TEST(test_create_block_region_clones_offset_internal_success);
     CPPUNIT_TEST(test_create_block_region_clones_no_open);
@@ -108,6 +109,18 @@ public:
         "Fname\n22 123 \n42 7\n125\n9\n12 123 \n42 7\n125\n");
         TokenContainer tc(iss);
         CloneDetector cd(tc, 2);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+    }
+
+    void test_create_block_region_clones_offset_internal_block_end_success() {
+        std::istringstream iss(
+        //      No match Clone           No match Clone
+        "Fname\n22 123 \n42 125 11 7\n9\n12 123 \n42 125 11 7\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 3);
         cd.prune_non_clones();
         cd.create_block_region_clones();
         CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
