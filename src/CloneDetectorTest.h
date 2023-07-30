@@ -12,6 +12,7 @@ class CloneDetectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_insert);
     CPPUNIT_TEST(test_prune_non_clones);
     CPPUNIT_TEST(test_create_line_region_clones);
+    CPPUNIT_TEST(test_create_block_region_clones_same_prefix);
     CPPUNIT_TEST(test_create_block_region_clones_simple);
     CPPUNIT_TEST(test_create_block_region_clones_offset_success);
     CPPUNIT_TEST(test_create_block_region_clones_offset_internal_block_end_success);
@@ -102,6 +103,28 @@ public:
         CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
         CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
     }
+
+    void test_create_block_region_clones_same_prefix() {
+        std::istringstream iss(
+// Line:        1    2   3              4  5    6   7
+        "Fname\n125\n90\n12 123 42 125\n9\n125\n90\n12 123 42 125\n");
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 3);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
+        CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+        // cd.report_text();
+        for (const auto& clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (const auto& member: clone_group) {
+                auto member_file_id = member.get_file_id();
+                int line = tc.get_token_line_number(member_file_id, member.get_begin_token_offset()) + 1;
+                CPPUNIT_ASSERT(line == 3 || line == 7);
+            }
+        }
+    }
+
 
     void test_create_block_region_clones_offset_success() {
         std::istringstream iss(

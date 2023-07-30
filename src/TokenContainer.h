@@ -242,7 +242,7 @@ public:
         return file_data[file_id].offset_begin(offset);
     }
 
-    // Return an iterator to line end of tokens starting in the specified offset
+    // Return an iterator to the end of the line to which a token belongs
     FileData::tokens_type::const_iterator line_from_offset_end(file_id_type file_id,
             FileData::token_offset_type offset) const {
         return file_data[file_id].line_from_offset_end(offset);

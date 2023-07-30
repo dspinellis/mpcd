@@ -207,8 +207,10 @@ CloneDetector::create_block_region_clone(const SeenTokens& leader,
 
     auto leader_file_id = leader.get_file_id();
     auto leader_begin = token_container.offset_begin(leader_file_id, leader_begin_token_offset);
-    auto leader_end = leader_begin + clone_length;
-    // Find block begin within the clone region
+
+    // Find block begin within the first line of the clone region
+    auto leader_line_end = token_container.line_from_offset_end(leader_file_id, leader_begin_token_offset);
+    auto leader_end = std::min(leader_begin + clone_length, leader_line_end);
     auto leader_block_begin = leader_begin + offset;
     for (; leader_block_begin < leader_end; ++leader_block_begin)
         if (*leader_block_begin == '{')
