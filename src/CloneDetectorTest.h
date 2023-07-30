@@ -12,6 +12,7 @@ class CloneDetectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(test_insert);
     CPPUNIT_TEST(test_prune_non_clones);
     CPPUNIT_TEST(test_create_line_region_clones);
+    CPPUNIT_TEST(test_create_block_region_clones_bce);
     CPPUNIT_TEST(test_create_block_region_clones_same_prefix);
     CPPUNIT_TEST(test_create_block_region_clones_simple);
     CPPUNIT_TEST(test_create_block_region_clones_offset_success);
@@ -125,6 +126,38 @@ public:
         }
     }
 
+    void test_create_block_region_clones_bce() {
+        std::istringstream iss(
+        // From BigCloneEvaluate: very tight (start of file to EOF)
+        // with enclosing shadowed element
+        // selected,356996.java,50,90,selected,994186.java,47,87
+        // { echo 'F994186.java\n'; tokenizer -l Java -o line -c "./ijadataset/bcb_reduced/2/selected/994186.java" | sed -n 47,87p ; echo 'F356996.java\n'; tokenizer -l Java -o line -c "./ijadataset/bcb_reduced/2/selected/356996.java" | sed -n 50,90p ; } | sed 's/\t/ /g;s/ $/\\n/' | tr -d \\n
+        "F994186.java\n996 999 40 41 123\n999 999 61 362 59\n999 999 61 362 59\n999 999 61 362 59\n999 999 61 362 59\n830 123\n999 999 61 744 999 40 999 41 59\n999 999 61 40 999 41 999 46 999 40 41 59\n999 46 999 40 999 41 59\n999 46 999 40 999 41 59\n999 46 999 40 999 41 59\n999 46 999 40 362 41 59\n999 46 999 40 362 44 362 41 59\n999 46 999 40 362 44 362 41 59\n999 46 999 40 362 44 362 43 999 41 59\n999 999 61 744 999 40 999 46 999 40 41 41 59\n999 46 999 40 999 43 999 43 999 41 59\n999 46 999 40 362 43 999 46 999 40 999 46 999 40 362 41 43 998 41 43 362 43 999 41 59\n999 46 999 40 999 41 59\n999 999 61 744 999 40 999 41 59\n996 91 93 999 61 744 996 91 998 93 59\n996 999 61 998 59\n870 40 40 999 61 999 46 999 40 999 41 41 340 45 998 41 123\n999 46 999 40 999 44 998 44 999 41 59\n125\n999 46 999 40 41 59\n999 46 999 40 999 41 59\n999 46 999 40 999 43 999 43 999 43 999 41 59\n999 46 999 40 41 59\n999 999 61 999 46 999 40 41 59\n999 999 61 744 999 40 999 44 362 41 59\n999 999 61 744 999 40 999 41 59\n999 999 61 999 46 999 40 41 59\n999 46 999 40 823 44 999 44 999 46 999 41 46 999 40 41 59\n999 46 999 40 41 59\n999 46 999 40 41 59\n125 580 40 999 999 41 123\n999 46 999 40 41 59\n999 40 999 46 999 40 41 41 59\n125\n125\n"
+        "F356996.java\n996 999 40 41 123\n999 999 61 362 59\n999 999 61 362 59\n999 999 61 362 59\n999 999 61 362 59\n830 123\n999 999 61 744 999 40 999 41 59\n999 999 61 40 999 41 999 46 999 40 41 59\n999 46 999 40 999 41 59\n999 46 999 40 999 41 59\n999 46 999 40 999 41 59\n999 46 999 40 362 41 59\n999 46 999 40 362 44 362 41 59\n999 46 999 40 362 44 362 41 59\n999 46 999 40 362 44 362 43 999 41 59\n999 999 61 744 999 40 999 46 999 40 41 41 59\n999 46 999 40 999 43 999 43 999 41 59\n999 46 999 40 362 43 999 46 999 40 999 46 999 40 362 41 43 998 41 43 362 43 999 41 59\n999 46 999 40 999 41 59\n999 999 61 744 999 40 999 41 59\n996 91 93 999 61 744 996 91 998 93 59\n996 999 61 998 59\n870 40 40 999 61 999 46 999 40 999 41 41 340 45 998 41 123\n999 46 999 40 999 44 998 44 999 41 59\n125\n999 46 999 40 41 59\n999 46 999 40 999 41 59\n999 46 999 40 999 43 999 43 999 43 999 41 59\n999 46 999 40 41 59\n999 999 61 999 46 999 40 41 59\n999 999 61 744 999 40 999 44 362 41 59\n999 999 61 744 999 40 999 41 59\n999 999 61 999 46 999 40 41 59\n999 46 999 40 823 44 999 44 999 46 999 41 46 999 40 41 59\n999 46 999 40 41 59\n999 46 999 40 41 59\n125 580 40 999 999 41 123\n999 46 999 40 41 59\n999 40 999 46 999 40 41 41 59\n125\n125\n"
+        );
+        TokenContainer tc(iss);
+        CloneDetector cd(tc, 20);
+        cd.prune_non_clones();
+        cd.create_block_region_clones();
+        cd.remove_shadowed_groups();
+        // TODO: ensure all shadowed groups are removed
+        // cd.report_text();
+        // CPPUNIT_ASSERT_EQUAL(1, cd.get_number_of_clone_groups());
+        // CPPUNIT_ASSERT_EQUAL(2, cd.get_number_of_clones());
+        bool found = false;
+        for (const auto& clone_group: cd.clone_view()) {
+            CPPUNIT_ASSERT_EQUAL(size_t(2), clone_group.size());
+            for (const auto& member: clone_group) {
+                auto member_file_id = member.get_file_id();
+                int begin_line = tc.get_token_line_number(member_file_id, member.get_begin_token_offset()) + 1;
+                int end_line = tc.get_token_line_number(member_file_id, member.get_end_token_offset()) + 1;
+                // std::cout << begin_line << ' '  << end_line << "\n";
+                if (end_line - begin_line == 40)
+                    found = true;
+            }
+        }
+        CPPUNIT_ASSERT(found);
+    }
 
     void test_create_block_region_clones_offset_success() {
         std::istringstream iss(

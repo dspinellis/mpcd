@@ -202,7 +202,7 @@ CloneDetector::create_block_region_clone(const SeenTokens& leader,
         const seen_locations_type& members, int offset)
 {
     auto leader_begin_token_offset = leader.get_begin_token_offset();
-    if (leader_begin_token_offset + offset < 0)
+    if (leader_begin_token_offset == 0 && offset < 0)
         return false;  // Can't deal with this offset
 
     auto leader_file_id = leader.get_file_id();
@@ -210,12 +210,13 @@ CloneDetector::create_block_region_clone(const SeenTokens& leader,
 
     // Find block begin within the first line of the clone region
     auto leader_line_end = token_container.line_from_offset_end(leader_file_id, leader_begin_token_offset);
-    auto leader_end = std::min(leader_begin + clone_length, leader_line_end);
+    auto leader_end = leader_begin + clone_length;
+    auto leader_search_end = std::min(leader_end, leader_line_end);
     auto leader_block_begin = leader_begin + offset;
-    for (; leader_block_begin < leader_end; ++leader_block_begin)
+    for (; leader_block_begin < leader_search_end; ++leader_block_begin)
         if (*leader_block_begin == '{')
             break;
-    if (leader_block_begin == leader_end)
+    if (leader_block_begin == leader_search_end)
         return false;  // This candidate does not contain a code block; skip it
 
     // Find matching end
